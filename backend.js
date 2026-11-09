@@ -255,7 +255,10 @@
 
   // ---------- AI calls ----------
   async function aiFetch(url, options, provider) {
-    var r = await fetch(url, options), body = await r.text(), parsed = null;
+    var ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, 90000), r, body, parsed = null;
+    try { options.signal = ctl.signal; r = await fetch(url, options); body = await r.text(); }
+    catch (e) { throw new Error(e && e.name === 'AbortError' ? DEFAULTS[provider].label + ' took longer than 90 seconds. Try again, or switch to a faster model in AI & settings.' : 'Could not reach ' + DEFAULTS[provider].label + ': ' + (e && e.message || e)); }
+    finally { clearTimeout(timer); }
     try { parsed = JSON.parse(body); } catch (e) {}
     if (!r.ok) {
       var detail = parsed && parsed.error && (parsed.error.message || parsed.error.type);
@@ -301,7 +304,7 @@
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM }] },
           contents: [{ role: 'user', parts: [{ text: userContent }] }],
-          generationConfig: { responseMimeType: 'application/json', temperature: 0.2, maxOutputTokens: 3000 }
+          generationConfig: Object.assign({ responseMimeType: 'application/json', temperature: 0.2, maxOutputTokens: 4000 }, /flash/.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {})
         })
       }, p);
     } else if (p === 'anthropic') {
