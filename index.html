@@ -44,10 +44,8 @@
     .library-title-row h1 { margin: 0; font-size: 17px; letter-spacing: -.035em; }
     .library-title-row .icon-btn { margin-left: auto; }
     .search { position: relative; margin-top: 15px; }
-    .search input { width: 100%; height: 39px; padding: 0 36px 0 35px; border: 1px solid #e7e5e0; border-radius: 10px; outline: 0; background: var(--surface); }
+    .search input { width: 100%; height: 39px; padding: 0 12px 0 36px; border: 1px solid #e7e5e0; border-radius: 10px; outline: 0; background: var(--surface); }
     .search input:focus { border-color: #d3a398; box-shadow: 0 0 0 3px #d9775f15; }
-    .search-mark { position: absolute; top: 8px; left: 11px; color: #999c95; font-size: 17px; }
-    .shortcut { position: absolute; top: 9px; right: 10px; color: #a4a69f; font-size: 10px; }
     .meeting-list { display: grid; gap: 3px; padding: 9px; }
     .meeting-card { display: block; width: 100%; padding: 12px; border: 1px solid transparent; border-radius: 11px; background: transparent; text-align: left; }
     .meeting-card:hover { background: #f1f0ec; }
@@ -89,7 +87,7 @@
     .quiet { color: var(--muted); font-size: 12px; }
     .transcript-area { min-height: 180px !important; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
     .action-list { display: grid; gap: 8px; }
-    .action-row { display: grid; grid-template-columns: 24px minmax(140px,1fr) minmax(90px,130px) minmax(90px,120px) 32px; align-items: center; gap: 7px; }
+    .action-row { display: grid; grid-template-columns: 24px minmax(140px,1fr) minmax(90px,130px) 150px 32px; align-items: center; gap: 7px; }
     .action-row input:not([type=checkbox]) { min-width: 0; width: 100%; padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px; outline: 0; background: #fff; font-size: 12px; }
     .action-row input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--green); }
     .action-row.done input:not([type=checkbox]) { color: #999; text-decoration: line-through; }
@@ -110,6 +108,55 @@
     .empty-editor { display: grid; min-height: calc(100vh - 62px); place-content: center; padding: 30px; color: var(--muted); text-align: center; }
     .empty-editor b { color: var(--ink); font-size: 22px; letter-spacing: -.04em; }
     .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+    .search-mark { position: absolute; top: 50%; left: 12px; width: 16px; height: 16px; transform: translateY(-50%); color: #8d9089; pointer-events: none; }
+    .btn.active-seg, .chip-btn.on { background: var(--accent-soft); border-color: #eec9be; color: #a2412a; font-weight: 650; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0; }
+    .chip-btn { padding: 5px 11px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: #50544e; font-size: 12px; }
+    .chip-btn span { margin-left: 3px; color: var(--muted); }
+    .group-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+    .people-add { display: grid; grid-template-columns: 1fr 1.3fr 1.2fr auto; gap: 8px; }
+    .people-add input, .contact-row input, #bulkText { min-width: 0; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; outline: 0; background: #fff; font-size: 13px; }
+    .people-add input:focus, .contact-row input:focus, .people-input-row input:focus { border-color: #d3a398; box-shadow: 0 0 0 3px #d9775f12; }
+    #bulkText { display: block; min-height: 90px; margin-top: 10px; }
+    .contact-row { display: grid; grid-template-columns: 1fr 1.3fr 1.2fr 32px; gap: 7px; margin: 6px 0; }
+    .meta-row.people-row { align-items: start; }
+    .people-picker { position: relative; min-width: 0; }
+    .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chips:not(:empty) { margin-bottom: 6px; }
+    .chip { display: inline-flex; align-items: center; gap: 3px; padding: 3px 4px 3px 10px; border-radius: 999px; background: #eceae4; color: var(--ink); font-size: 12px; }
+    .chip button { display: grid; place-items: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--muted); line-height: 1; }
+    .chip button:hover { background: #d9d6cd; color: var(--ink); }
+    .people-input-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .people-input-row input { flex: 1 1 170px; min-width: 0; padding: 6px 9px; border: 1px solid var(--line); border-radius: 7px; outline: 0; background: #fff; }
+    .people-input-row select { padding: 6px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+    .people-menu { position: absolute; z-index: 5; top: 100%; left: 0; width: min(420px, 100%); max-height: 260px; margin-top: 4px; padding: 4px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; background: #fff; box-shadow: var(--shadow); }
+    .people-menu[hidden], .chat-bar[hidden] { display: none; }
+    .people-opt { display: flex; flex-direction: column; gap: 1px; width: 100%; padding: 7px 9px; border: 0; border-radius: 7px; background: transparent; text-align: left; }
+    button.people-opt:hover { background: #f3f1ec; }
+    .people-opt span { color: var(--muted); font-size: 11px; }
+    .act-group { margin: 24px 0; }
+    .act-group h3 { margin: 0 0 8px; font-size: 14px; }
+    .act-row { display: grid; grid-template-columns: 22px minmax(0,1fr) auto; gap: 10px; align-items: start; margin: 6px 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+    .act-row input[type=checkbox] { width: 16px; height: 16px; margin-top: 3px; accent-color: var(--green); }
+    .act-row.done .act-task { color: #999; text-decoration: line-through; }
+    .act-meta { color: var(--muted); font-size: 12px; }
+    .act-meta.overdue { color: #b94f45; font-weight: 650; }
+    .trash-card { cursor: default; }
+    .trash-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .chat-fab { position: fixed; right: 22px; bottom: 22px; z-index: 7; width: 48px; height: 48px; border: 0; border-radius: 50%; color: #fff; background: var(--accent); box-shadow: var(--shadow); font-size: 20px; }
+    .chat-bar { position: fixed; right: 22px; bottom: 80px; z-index: 7; display: flex; flex-direction: column; width: min(400px, calc(100vw - 32px)); max-height: min(560px, calc(100vh - 110px)); overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 24px 80px #0003; }
+    .chat-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+    .chat-head select { margin-left: auto; padding: 5px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    .chat-msgs { flex: 1; min-height: 120px; padding: 12px 14px; overflow: auto; }
+    .chat-q { margin: 8px 0 4px; text-align: right; }
+    .chat-q span { display: inline-block; max-width: 90%; padding: 7px 11px; border-radius: 12px 12px 3px 12px; background: var(--accent-soft); text-align: left; }
+    .chat-a { margin: 4px 0 10px; padding: 8px 11px; border-radius: 12px 12px 12px 3px; background: #f3f1ec; line-height: 1.55; }
+    .chat-a p { margin: 0 0 6px; }
+    .chat-a.err { color: #b94f45; }
+    .chat-form { display: flex; gap: 6px; padding: 10px; border-top: 1px solid var(--line); }
+    .chat-form input { flex: 1; min-width: 0; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; outline: 0; }
+    @media (max-width: 740px) { .people-add { grid-template-columns: 1fr; } .contact-row { grid-template-columns: 1fr 32px; } .contact-row input:nth-child(2), .contact-row input:nth-child(3) { grid-column: 1; } .chat-fab { bottom: calc(70px + env(safe-area-inset-bottom)); } .chat-bar { bottom: calc(128px + env(safe-area-inset-bottom)); } }
     @media (max-width: 960px) { .app { grid-template-columns: 205px minmax(250px, 300px) minmax(0,1fr); } .rail { padding-inline: 9px; } .editor { padding-inline: 28px; } }
     @media (max-width: 740px) {
       .app { display: block; }
@@ -140,6 +187,8 @@
         <button class="nav-item active" data-filter="all"><span class="nav-icon">&#x25a4;</span><span>All meetings</span><span class="count" id="allCount"></span></button>
         <button class="nav-item" data-filter="inbox"><span class="nav-icon">&#x2311;</span><span>Inbox</span><span class="count" id="inboxCount"></span></button>
         <button class="nav-item" data-filter="actions"><span class="nav-icon">&#x2611;</span><span>Action items</span></button>
+        <button class="nav-item" data-filter="trash"><span class="nav-icon">&#x232b;</span><span>Recycle bin</span></button>
+        <button class="nav-item" id="peopleButton"><span class="nav-icon">&#x2659;</span><span>People &amp; groups</span></button>
       </div>
       <div class="nav-label">Notebooks <button class="icon-btn" id="addNotebook" title="Create a notebook" aria-label="Create a notebook">&#xff0b;</button></div>
       <div class="notebooks" id="notebooks"></div>
@@ -151,7 +200,7 @@
     <section class="library" aria-label="Meeting directory">
       <header class="library-head">
         <div class="library-title-row"><h1 id="listTitle">All meetings</h1><button class="icon-btn" id="listNew" title="New meeting" aria-label="New meeting">&#xff0b;</button></div>
-        <label class="search"><span class="search-mark" aria-hidden="true">&#x2315;</span><input id="search" type="search" placeholder="Search notes, decisions, people&#x2026;" autocomplete="off" aria-label="Fuzzy search all meeting notes"><span class="shortcut">&#x2318; K</span></label>
+        <label class="search"><svg class="search-mark" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="search" type="search" placeholder="Search notes, decisions, people..." autocomplete="off" aria-label="Fuzzy search all meeting notes"></label>
       </header>
       <div class="meeting-list" id="meetingList" aria-live="polite" aria-busy="true"><div class="loading">Loading your notebooks&#x2026;</div></div>
     </section>
@@ -189,7 +238,7 @@
       participants: [], tags: [], summary: '', keyPoints: [], decisions: [], actionItems: [],
       followUps: [], transcript: '', rawNotes: '', createdAt: Date.now(), updatedAt: Date.now(),
     });
-    const state = { notes: [], current: null, filter: 'all', query: '', dirty: false, saving: false, ai: null, recorder: null, chunks: [], stream: null, recTimer: 0, recStarted: 0 };
+    const state = { contacts: [], trash: [], trashLoaded: false, view: '', actionGroup: 'meeting', actionShowDone: false, peopleGroup: '', chat: { open: false, busy: false, scope: 'meeting', history: {} }, notes: [], current: null, filter: 'all', query: '', dirty: false, saving: false, ai: null, recorder: null, chunks: [], stream: null, recTimer: 0, recStarted: 0 };
     const app = $('#app'), list = $('#meetingList'), editorShell = $('#editorShell'), toastBox = $('#toast');
     let toastTimer = 0;
     $('#accountLabel').textContent = 'Connecting to Google Drive\u2026';
@@ -288,7 +337,8 @@
       $('#inboxCount').textContent = state.notes.filter((n) => !n.notebook || n.notebook === 'Inbox').length || '';
       const notebooks = [...new Set(state.notes.map((n) => n.notebook).filter((n) => n && n !== 'Inbox'))].sort((a, b) => a.localeCompare(b));
       $('#notebooks').innerHTML = notebooks.map((notebook) => `<div class="notebook-row"><button class="nav-item${state.filter === 'notebook:' + notebook ? ' active' : ''}" data-notebook="${esc(notebook)}"><span class="nav-icon">\u25a7</span><span>${esc(notebook)}</span></button></div>`).join('');
-      $('#listTitle').textContent = state.filter === 'inbox' ? 'Inbox' : state.filter === 'actions' ? 'Action items' : state.filter.startsWith('notebook:') ? state.filter.slice(9) : state.query ? 'Search results' : 'All meetings';
+      $('#listTitle').textContent = state.filter === 'trash' ? 'Recycle bin' : state.filter === 'inbox' ? 'Inbox' : state.filter === 'actions' ? 'Action items' : state.filter.startsWith('notebook:') ? state.filter.slice(9) : state.query ? 'Search results' : 'All meetings';
+      if (state.filter === 'trash') { renderTrashList(); return; }
       if (!notes.length) {
         list.innerHTML = `<div class="empty-list">${state.query ? 'No close matches. Try fewer words or another spelling.' : state.filter === 'actions' ? 'No open action items.' : 'No meetings here yet.'}<br><br><button class="btn" data-new>\uff0b New meeting</button></div>`;
         return;
@@ -304,8 +354,8 @@
       return items.length ? items.map((item, index) => `<div class="action-row${item.done ? ' done' : ''}" data-action-index="${index}">
         <input type="checkbox" data-action-field="done" aria-label="Mark action complete"${item.done ? ' checked' : ''}>
         <input data-action-field="task" value="${esc(item.task)}" placeholder="Action item">
-        <input data-action-field="owner" value="${esc(item.owner)}" placeholder="Owner">
-        <input class="due-input" data-action-field="due" value="${esc(item.due)}" placeholder="Due date">
+        <input data-action-field="owner" value="${esc(item.owner)}" placeholder="Owner" list="peopleList">
+        <input class="due-input" type="date" data-action-field="due" value="${isoDate(item.due) ? esc(item.due) : ''}" data-orig="${isoDate(item.due) ? '' : esc(item.due)}" title="${isoDate(item.due) || !item.due ? 'Due date' : esc(item.due)}" aria-label="Due date">
         <button class="icon-btn" data-remove-action title="Remove action" aria-label="Remove action">\u00d7</button></div>`).join('') : '<p class="quiet">Capture who will do what, by when.</p>';
     }
     function editorHtml(note) {
@@ -317,7 +367,7 @@
           <div class="crumb"><span>Notebook</span><span>&rsaquo;</span><input data-field="notebook" value="${esc(note.notebook || 'Inbox')}" aria-label="Notebook name"></div>
           <input class="title-input" data-field="title" value="${esc(note.title)}" placeholder="Meeting title" aria-label="Meeting title">
           <div class="meta-row"><label>\u25f7 &nbsp; Date</label><input type="date" data-field="date" value="${esc(note.date)}"></div>
-          <div class="meta-row"><label>\u2659 &nbsp; People</label><input data-list-field="participants" value="${esc((note.participants || []).join(', '))}" placeholder="Add attendees, separated by commas"></div>
+          <div class="meta-row people-row"><label>\u2659 &nbsp; People</label>${peoplePickerHtml(note)}</div><datalist id="peopleList">${state.contacts.map((c) => `<option value="${esc(personLabel(c))}"></option>`).join('')}</datalist>
           <div class="meta-row"><label>\u2311 &nbsp; Tags</label><input data-list-field="tags" value="${esc((note.tags || []).join(', '))}" placeholder="Add tags, separated by commas"></div>
           <div class="divider"></div>
           <section class="section"><div class="section-head"><span class="section-icon">\u2733</span><h2>Summary</h2></div><textarea class="summary-area" data-field="summary" placeholder="A short overview of the conversation\u2026">${esc(note.summary)}</textarea></section>
@@ -344,9 +394,10 @@
       $('#meetingEditor')?.querySelectorAll('[data-lines]').forEach((input) => {
         note[input.dataset.lines] = input.value.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
       });
+      if ($('#peopleChips')) note.participants = [...document.querySelectorAll('#peopleChips [data-chip]')].map((c) => c.dataset.chip);
       note.actionItems = [...($('#actionList')?.querySelectorAll('.action-row') || [])].map((row) => {
         const get = (field) => row.querySelector(`[data-action-field="${field}"]`);
-        return { task: get('task').value.trim(), owner: get('owner').value.trim(), due: get('due').value.trim(), done: get('done').checked, priority: '' };
+        return { task: get('task').value.trim(), owner: get('owner').value.trim(), due: get('due').value.trim() || get('due').dataset.orig || '', done: get('done').checked, priority: '' };
       }).filter((item) => item.task);
       return note;
     }
@@ -361,6 +412,7 @@
     function openMeeting(note, mobile = false) {
       state.current = { ...note, participants: [...(note.participants || [])], tags: [...(note.tags || [])], keyPoints: [...(note.keyPoints || [])], decisions: [...(note.decisions || [])], followUps: [...(note.followUps || [])], actionItems: (note.actionItems || []).map((x) => ({ ...x })) };
       state.dirty = false;
+      state.view = '';
       editorShell.innerHTML = editorHtml(state.current);
       if (mobile) app.classList.add('mobile-editor');
       renderList();
@@ -404,6 +456,7 @@
       return true;
     }
     function renderSettings() {
+      state.view = 'settings';
       const current = state.ai || { provider: 'gemini', model: 'gemini-2.5-flash', baseUrl: DEFAULT_BASE, keys: {} };
       const providers = [
         ['gemini', 'Google Gemini'], ['openai', 'OpenAI-compatible (OpenAI, Groq, OpenRouter, etc.)'], ['anthropic', 'Anthropic Claude'],
@@ -470,8 +523,9 @@
       if (!state.ai?.keys?.[state.ai.provider]) { toast('Add an AI provider key in AI & settings first.'); renderSettings(); return; }
       const button = $('[data-generate]'); button.disabled = true; button.textContent = '\u2733 Drafting minutes\u2026';
       try {
-        const minutes = await gs('generateMeetingMinutes', { title: note.title, transcript: note.transcript, notes: note.rawNotes });
-        state.current = { ...note, ...minutes };
+        const minutes = await gs('generateMeetingMinutes', { title: note.title, transcript: note.transcript, notes: note.rawNotes, date: note.date });
+        const { title: suggestedTitle, ...rest } = minutes;
+        state.current = { ...note, ...rest, title: note.title.trim() ? note.title : (suggestedTitle || note.title) };
         state.dirty = true;
         editorShell.innerHTML = editorHtml(state.current);
         toast('Draft minutes are ready. Review them, then save.');
@@ -658,11 +712,11 @@
     function handleActionInput(event) {
       const row = event.target.closest('.action-row');
       if (row && event.target.dataset.actionField === 'done') row.classList.toggle('done', event.target.checked);
-      if (event.target.closest('#meetingEditor')) setDirty();
+      if (event.target.closest('#meetingEditor') && event.target.id !== 'peopleInput') setDirty();
     }
     document.addEventListener('input', (event) => {
       if (event.target === $('#search')) { state.query = event.target.value; renderList(); return; }
-      if (event.target.closest('#meetingEditor')) setDirty();
+      if (event.target.closest('#meetingEditor') && event.target.id !== 'peopleInput') setDirty();
     });
     document.addEventListener('change', (event) => { if (event.target.closest('#meetingEditor')) handleActionInput(event); });
     document.addEventListener('click', async (event) => {
@@ -677,8 +731,8 @@
       else if (button.matches('[data-settings-close]')) { if (state.current) openMeeting(state.current, true); else editorShell.innerHTML = '<div class="empty-editor"><div><b>Your meetings, thoughtfully organized.</b><p>Choose a meeting or start a new one.</p></div></div>'; }
       else if (button.matches('[data-save]')) await saveCurrent();
       else if (button.matches('[data-delete]')) {
-        if (!state.current?.id || !confirm('Delete this meeting and its notes from your Google Drive?')) return;
-        try { await gs('deleteMeeting', state.current.id); state.notes = state.notes.filter((n) => n.id !== state.current.id); state.current = null; state.dirty = false; editorShell.innerHTML = '<div class="empty-editor"><div><b>Meeting deleted.</b><p>Choose another meeting or start a new one.</p></div></div>'; renderList(); toast('Meeting deleted.'); }
+        if (!state.current?.id || !confirm('Move this meeting to the Recycle bin? You can restore it later.')) return;
+        try { await gs('deleteMeeting', state.current.id); state.notes = state.notes.filter((n) => n.id !== state.current.id); state.trashLoaded = false; state.current = null; state.dirty = false; editorShell.innerHTML = '<div class="empty-editor"><div><b>Meeting deleted.</b><p>Choose another meeting or start a new one.</p></div></div>'; renderList(); toast('Moved to the Recycle bin.'); }
         catch (error) { toast('Could not delete: ' + error.message); }
       } else if (button.matches('[data-add-action]')) {
         const note = readEditor(); note.actionItems.push({ task: '', owner: '', due: '', done: false, priority: '' }); state.current = note;
@@ -701,6 +755,346 @@
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); saveCurrent(); }
       if (event.key === 'Escape' && app.classList.contains('mobile-editor')) app.classList.remove('mobile-editor');
     });
+    // =====================================================================
+    // Action items overview, recycle bin, people & groups, AI chat
+    // =====================================================================
+    const todayIso = () => new Date().toISOString().slice(0, 10);
+    const isoDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(String(v || ''));
+    const newId = () => (crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '') : String(Date.now()) + Math.random().toString(36).slice(2)).slice(0, 32);
+    const parseGroups = (s) => [...new Set(String(s || '').split(/[,;]/).map((x) => x.trim()).filter(Boolean))];
+    const allGroups = () => [...new Set(state.contacts.flatMap((c) => c.groups || []))].sort((a, b) => a.localeCompare(b));
+    const personLabel = (c) => c.name || c.email || '';
+
+    // ---------- Action items overview ----------
+    function actRow({ note, item, index }) {
+      const overdue = !item.done && isoDate(item.due) && item.due < todayIso();
+      const ctx = state.actionGroup === 'meeting' ? '' : esc(note.title || 'Untitled meeting');
+      const meta = [item.owner ? 'Owner: ' + esc(item.owner) : '', item.due ? 'Due: ' + esc(item.due) : '', ctx].filter(Boolean).join(' · ');
+      return `<div class="act-row${item.done ? ' done' : ''}"><input type="checkbox" data-act-toggle data-note="${esc(note.id)}" data-index="${index}"${item.done ? ' checked' : ''} aria-label="Mark complete"><div class="act-main"><div class="act-task">${esc(item.task)}</div><div class="act-meta${overdue ? ' overdue' : ''}">${meta}</div></div><button class="btn" data-open-meeting="${esc(note.id)}">Open</button></div>`;
+    }
+    function renderActionsView() {
+      state.view = 'actions'; state.current = null; state.dirty = false;
+      app.classList.add('mobile-editor');
+      const mode = state.actionGroup, showDone = state.actionShowDone;
+      const rows = [];
+      state.notes.forEach((note) => (note.actionItems || []).forEach((item, index) => { if (showDone || !item.done) rows.push({ note, item, index }); }));
+      const groups = new Map();
+      rows.forEach((r) => {
+        const key = mode === 'notebook' ? (r.note.notebook || 'Inbox') : mode === 'owner' ? (r.item.owner || 'Unassigned') : r.note.id;
+        if (!groups.has(key)) groups.set(key, { label: mode === 'meeting' ? (r.note.title || 'Untitled meeting') : key, sub: mode === 'meeting' ? [r.note.notebook || 'Inbox', dateLabel(r.note.date)].filter(Boolean).join(' · ') : '', date: r.note.date || '', rows: [] });
+        groups.get(key).rows.push(r);
+      });
+      const dueKey = (r) => (isoDate(r.item.due) ? r.item.due : '9999');
+      const ordered = [...groups.values()].sort((a, b) => (mode === 'meeting' ? String(b.date).localeCompare(String(a.date)) : a.label.localeCompare(b.label)));
+      ordered.forEach((g) => g.rows.sort((a, b) => dueKey(a).localeCompare(dueKey(b))));
+      const open = rows.filter((r) => !r.item.done).length;
+      const seg = (id, label) => `<button class="btn${mode === id ? ' active-seg' : ''}" data-action-group="${id}">${label}</button>`;
+      editorShell.innerHTML = `<div class="editor-top"><span class="save-state">${open} open action item${open === 1 ? '' : 's'}</span>${seg('meeting', 'By meeting')}${seg('notebook', 'By notebook')}${seg('owner', 'By owner')}<button class="btn${showDone ? ' active-seg' : ''}" data-action-showdone>${showDone ? 'Hide' : 'Show'} completed</button></div>
+        <article class="editor"><h1 style="font-size:30px;letter-spacing:-.05em;margin:0 0 6px">Action items</h1><p class="quiet">Everything still pending across your meetings. Tick an item to mark it done.</p>
+        ${ordered.length ? ordered.map((g) => `<section class="act-group"><h3>${esc(g.label)}${g.sub ? ` <span class="quiet">${esc(g.sub)}</span>` : ''}</h3>${g.rows.map(actRow).join('')}</section>`).join('') : '<p class="quiet">Nothing pending. Nice work.</p>'}</article>`;
+    }
+    async function toggleAction(noteId, index, checked) {
+      const note = noteById(noteId);
+      if (!note) return;
+      const items = (note.actionItems || []).map((x) => ({ ...x }));
+      if (!items[index]) return;
+      items[index].done = checked;
+      try {
+        const saved = await gs('saveMeeting', { ...note, actionItems: items });
+        state.notes = [saved, ...state.notes.filter((n) => n.id !== saved.id)];
+      } catch (error) { toast('Could not update: ' + error.message); }
+      renderList();
+      if (state.view === 'actions') renderActionsView();
+    }
+
+    // ---------- Recycle bin ----------
+    async function showTrash() {
+      state.view = 'trash'; state.current = null; state.dirty = false; state.trashLoaded = false;
+      editorShell.innerHTML = '<div class="empty-editor"><div><b>Recycle bin</b><p>Deleted meetings wait here until you delete them forever.<br>Google Drive also empties its own trash after 30 days.</p></div></div>';
+      renderList();
+      try { state.trash = await gs('getTrashedMeetings'); } catch (error) { state.trash = []; toast('Could not load the recycle bin: ' + error.message); }
+      state.trashLoaded = true;
+      if (state.filter === 'trash') renderList();
+    }
+    function renderTrashList() {
+      if (!state.trashLoaded) { list.innerHTML = '<div class="loading">Loading deleted meetings...</div>'; return; }
+      if (!state.trash.length) { list.innerHTML = '<div class="empty-list">The recycle bin is empty.</div>'; return; }
+      list.innerHTML = state.trash.slice().sort((a, b) => String(b.deletedAt || '').localeCompare(String(a.deletedAt || ''))).map((n) => `<div class="meeting-card trash-card">
+        <span class="meeting-card-title"><span>${esc(n.title || 'Untitled meeting')}</span><span class="meeting-card-date">${esc(dateLabel(n.date))}</span></span>
+        <span class="meeting-card-summary">${esc(n.summary || n.transcript || n.rawNotes || '')}</span>
+        <span class="meeting-card-meta"><span>${esc(n.notebook || 'Inbox')}</span>${n.deletedAt ? `<span>·</span><span>Deleted ${esc(String(n.deletedAt).slice(0, 10))}</span>` : ''}</span>
+        <span class="trash-actions"><button class="btn" data-restore="${esc(n.id)}">Restore</button><button class="btn danger" data-purge="${esc(n.id)}">Delete forever</button></span></div>`).join('')
+        + '<div class="empty-list"><button class="btn danger" data-empty-trash>Empty recycle bin</button></div>';
+    }
+
+    // ---------- People & groups ----------
+    let contactsTimer = 0;
+    function setPeopleStatus(text) { const el = $('#peopleStatus'); if (el) el.textContent = text; }
+    function queueContactsSave() {
+      clearTimeout(contactsTimer);
+      setPeopleStatus('Saving...');
+      contactsTimer = setTimeout(async () => {
+        try { await gs('saveContacts', state.contacts); setPeopleStatus('All changes saved to your Drive'); }
+        catch (error) { setPeopleStatus('Could not save: ' + error.message); toast('Could not save people: ' + error.message); }
+      }, 900);
+    }
+    function groupChipsHtml() {
+      const sel = state.peopleGroup;
+      const chip = (id, label, count) => `<button class="chip-btn${sel === id ? ' on' : ''}" data-people-group="${esc(id)}">${esc(label)} <span>${count}</span></button>`;
+      const ungrouped = state.contacts.filter((c) => !(c.groups || []).length).length;
+      return chip('', 'Everyone', state.contacts.length) + allGroups().map((g) => chip(g, g, state.contacts.filter((c) => (c.groups || []).includes(g)).length)).join('') + chip('__none', 'No group', ungrouped);
+    }
+    function updateGroupChips() { const el = $('#groupChips'); if (el) el.innerHTML = groupChipsHtml(); const dl = $('#groupList'); if (dl) dl.innerHTML = allGroups().map((g) => `<option value="${esc(g)}"></option>`).join(''); }
+    function contactRow(c) {
+      return `<div class="contact-row" data-contact="${esc(c.id)}"><input data-contact-field="name" value="${esc(c.name)}" placeholder="Name"><input data-contact-field="email" value="${esc(c.email)}" placeholder="Email" type="email"><input data-contact-field="groups" value="${esc((c.groups || []).join(', '))}" placeholder="Groups (comma separated)"><button class="icon-btn" data-remove-contact title="Remove from master list" aria-label="Remove">×</button></div>`;
+    }
+    function renderPeopleView() {
+      state.view = 'people'; state.current = null; state.dirty = false;
+      app.classList.add('mobile-editor');
+      const sel = state.peopleGroup;
+      if (sel && sel !== '__none' && !allGroups().includes(sel)) state.peopleGroup = '';
+      const group = state.peopleGroup;
+      const shown = state.contacts.filter((c) => !group || (group === '__none' ? !(c.groups || []).length : (c.groups || []).includes(group)));
+      editorShell.innerHTML = `<div class="editor-top"><span class="save-state" id="peopleStatus">Changes save to your Drive automatically</span></div>
+        <article class="editor" id="peopleView"><h1 style="font-size:30px;letter-spacing:-.05em;margin:0 0 6px">People &amp; groups</h1>
+          <p class="quiet">Keep one master list of people and emails. Put each person in one or more groups (for example Leadership, Project X). In a meeting you can then add a whole group in one click, or pick individuals from a searchable list.</p>
+          <div class="chip-row" id="groupChips">${groupChipsHtml()}</div>
+          ${group && group !== '__none' ? '<div class="group-tools"><button class="btn" data-rename-group>Rename group</button><button class="btn danger" data-delete-group>Delete group (keeps the people)</button></div>' : ''}
+          <section class="section"><div class="section-head"><h2>Add a person</h2></div>
+            <div class="people-add"><input id="newName" placeholder="Name"><input id="newEmail" type="email" placeholder="Email"><input id="newGroups" placeholder="Groups, comma separated" list="groupList" value="${group && group !== '__none' ? esc(group) : ''}"><button class="primary" data-add-contact>Add</button></div></section>
+          <details class="section"><summary class="quiet" style="cursor:pointer">Bulk add from a pasted list</summary>
+            <textarea id="bulkText" placeholder="One per line, or separated by semicolons:&#10;Alex Tan &lt;alex@company.com&gt;&#10;jamie@company.com"></textarea>
+            <div class="people-add" style="margin-top:8px;grid-template-columns:1fr auto"><input id="bulkGroups" placeholder="Put them all in these groups (comma separated)" list="groupList"><button class="btn" data-bulk-add>Add all</button></div></details>
+          <datalist id="groupList">${allGroups().map((g) => `<option value="${esc(g)}"></option>`).join('')}</datalist>
+          <section class="section"><div class="section-head"><h2>${shown.length} ${group ? 'shown' : 'people'}</h2></div>
+            <div class="contact-list">${shown.map(contactRow).join('') || '<p class="quiet">No people here yet.</p>'}</div></section></article>`;
+      renderList();
+    }
+    function addContact(name, email, groups) {
+      name = String(name || '').trim(); email = String(email || '').trim();
+      if (!name && !email) return false;
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast('That email address does not look right: ' + email); return false; }
+      const existing = email && state.contacts.find((c) => String(c.email).toLowerCase() === email.toLowerCase());
+      if (existing) {
+        existing.groups = [...new Set([...(existing.groups || []), ...groups])];
+        if (name && !existing.name) existing.name = name;
+        return true;
+      }
+      state.contacts.push({ id: newId(), name: name || email.split('@')[0], email, groups });
+      return true;
+    }
+
+    // ---------- Participant picker inside a meeting ----------
+    const chipHtml = (name) => `<span class="chip" data-chip="${esc(name)}">${esc(name)}<button type="button" data-remove-chip aria-label="Remove ${esc(name)}">×</button></span>`;
+    const chosenPeople = () => [...document.querySelectorAll('#peopleChips [data-chip]')].map((c) => c.dataset.chip);
+    function addPerson(name) {
+      name = String(name || '').trim();
+      const box = $('#peopleChips');
+      if (!name || !box) return;
+      if (chosenPeople().some((x) => x.toLowerCase() === name.toLowerCase())) return;
+      box.insertAdjacentHTML('beforeend', chipHtml(name));
+      setDirty();
+    }
+    function renderPeopleMenu() {
+      const input = $('#peopleInput'), menu = $('#peopleMenu');
+      if (!input || !menu) return;
+      const raw = input.value.trim(), q = raw.toLowerCase(), chosen = chosenPeople().map((x) => x.toLowerCase());
+      const matches = state.contacts.filter((c) => !chosen.includes(personLabel(c).toLowerCase()) && (!q || [c.name, c.email, (c.groups || []).join(' ')].join(' ').toLowerCase().includes(q))).slice(0, 8);
+      const exact = q && state.contacts.some((c) => personLabel(c).toLowerCase() === q);
+      let html = matches.map((c) => `<button type="button" class="people-opt" data-pick="${esc(personLabel(c))}"><b>${esc(personLabel(c))}</b><span>${esc([c.email, (c.groups || []).join(', ')].filter(Boolean).join(' · '))}</span></button>`).join('');
+      if (raw && !exact) html += `<button type="button" class="people-opt" data-pick="${esc(raw)}"><b>Add "${esc(raw)}"</b><span>as a one-off guest</span></button>`;
+      if (!html) html = '<div class="people-opt"><span>No contacts left to pick. Add people under People in the sidebar.</span></div>';
+      menu.innerHTML = html;
+      menu.hidden = false;
+    }
+    function peoplePickerHtml(note) {
+      const groups = allGroups();
+      return `<div class="people-picker" id="peoplePicker">
+        <div class="chips" id="peopleChips">${(note.participants || []).map(chipHtml).join('')}</div>
+        <div class="people-input-row"><input id="peopleInput" placeholder="Type a name or email to add..." autocomplete="off" aria-label="Add a participant">
+          <select id="peopleGroupSel" aria-label="Add a whole group"><option value="">+ Add a group</option>${groups.map((g) => `<option value="${esc(g)}">${esc(g)} (${state.contacts.filter((c) => (c.groups || []).includes(g)).length})</option>`).join('')}</select>
+          <button type="button" class="btn" data-copy-emails>Copy emails</button></div>
+        <div class="people-menu" id="peopleMenu" hidden></div></div>`;
+    }
+    async function copyEmails() {
+      const byName = new Map(state.contacts.map((c) => [personLabel(c).toLowerCase(), c]));
+      const names = chosenPeople();
+      const emails = names.map((n) => byName.get(n.toLowerCase())?.email).filter(Boolean);
+      if (!emails.length) { toast('None of the selected people have an email in your master list.'); return; }
+      try { await navigator.clipboard.writeText(emails.join(', ')); toast('Copied ' + emails.length + ' email' + (emails.length === 1 ? '' : 's') + (emails.length < names.length ? ' (' + (names.length - emails.length) + ' without an email skipped).' : '.')); }
+      catch (error) { toast('Could not copy: ' + error.message); }
+    }
+
+    // ---------- AI chat bar ----------
+    function meetingBlock(n, full) {
+      const L = [`## ${n.title || 'Untitled meeting'} (${n.date || 'no date'}; notebook: ${n.notebook || 'Inbox'}${(n.participants || []).length ? '; people: ' + n.participants.join(', ') : ''})`];
+      if (n.summary) L.push('Summary: ' + n.summary);
+      if ((n.keyPoints || []).length) L.push('Key points: ' + n.keyPoints.join(' | '));
+      if ((n.decisions || []).length) L.push('Decisions: ' + n.decisions.join(' | '));
+      if ((n.actionItems || []).length) L.push('Action items: ' + n.actionItems.map((a) => `${a.done ? '[done]' : '[open]'} ${a.task}${a.owner ? ' (owner: ' + a.owner + ')' : ''}${a.due ? ' (due: ' + a.due + ')' : ''}`).join(' | '));
+      if ((n.followUps || []).length) L.push('Follow-ups: ' + n.followUps.join(' | '));
+      if (full) { if (n.rawNotes) L.push('Raw notes: ' + n.rawNotes); if (n.transcript) L.push('Transcript: ' + n.transcript); }
+      return L.join('\n');
+    }
+    function chatScope() { return state.chat.scope === 'meeting' && state.current ? 'meeting' : 'all'; }
+    function chatKey() { return chatScope() === 'meeting' ? 'm:' + (state.current.id || 'draft') : 'all'; }
+    function chatContext() {
+      let out = 'Today is ' + todayIso() + '.\n\n';
+      if (chatScope() === 'meeting') return (out + meetingBlock(readEditor() || state.current, true)).slice(0, 80000);
+      state.notes.slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))).forEach((n) => {
+        const block = meetingBlock(n, false) + '\n\n';
+        if (out.length + block.length < 80000) out += block;
+      });
+      return out;
+    }
+    const chatFormat = (t) => esc(t).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+    function chatEnsureDom() {
+      if ($('#chatFab')) return;
+      document.body.insertAdjacentHTML('beforeend', `<button class="chat-fab" id="chatFab" aria-label="Ask AI about your meetings" aria-expanded="false" title="Ask AI">✳</button>
+        <div class="chat-bar" id="chatBar" role="region" aria-label="Ask AI" hidden>
+          <div class="chat-head"><b>Ask AI</b><select id="chatScope" aria-label="What to ask about"><option value="meeting">This meeting</option><option value="all">All my meetings</option></select><button class="btn" data-chat-clear>Clear</button></div>
+          <div class="chat-msgs" id="chatMsgs"></div>
+          <form class="chat-form" id="chatForm" autocomplete="off"><input id="chatQ" maxlength="800" placeholder="Ask about your meetings..." aria-label="Question"><button class="primary" aria-label="Send">Ask</button></form></div>`);
+      $('#chatForm').addEventListener('submit', (event) => { event.preventDefault(); const q = $('#chatQ').value.trim(); if (q) { $('#chatQ').value = ''; chatAsk(q); } });
+    }
+    function chatRender() {
+      chatEnsureDom();
+      const scope = chatScope(), sel = $('#chatScope');
+      sel.value = scope;
+      sel.querySelector('option[value="meeting"]').disabled = !state.current;
+      const hist = state.chat.history[chatKey()] || [];
+      const hasKey = !!state.ai?.keys?.[state.ai.provider];
+      const suggestions = scope === 'meeting'
+        ? ['Summarise this meeting in 3 bullets', 'What are the open action items?', 'What was decided and why?']
+        : ['What are all my open action items?', 'What did we decide recently?', 'Which meetings involved the most follow-ups?'];
+      $('#chatMsgs').innerHTML = (!hasKey ? '<div class="chat-a err">Add an AI provider key in AI &amp; settings to use chat.</div>' : '')
+        + (!hist.length ? `<p class="quiet">Ask anything about ${scope === 'meeting' ? 'the meeting you have open' : 'your saved meetings'}.</p><div class="chip-row">${suggestions.map((s) => `<button class="chip-btn" data-chat-suggest="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : '')
+        + hist.map((h) => `<div class="chat-q"><span>${esc(h.q)}</span></div>${h.a || h.err ? `<div class="chat-a${h.err ? ' err' : ''}"><p>${chatFormat(h.a)}</p></div>` : '<div class="chat-a quiet">Thinking...</div>'}`).join('');
+      const box = $('#chatMsgs');
+      box.scrollTop = box.scrollHeight;
+    }
+    function chatSetOpen(on) {
+      chatEnsureDom();
+      state.chat.open = on;
+      $('#chatBar').hidden = !on;
+      $('#chatFab').setAttribute('aria-expanded', String(on));
+      $('#chatFab').textContent = on ? '×' : '✳';
+      if (on) { chatRender(); setTimeout(() => $('#chatQ')?.focus(), 60); }
+    }
+    async function chatAsk(question) {
+      if (state.chat.busy) return;
+      if (!state.ai?.keys?.[state.ai.provider]) { chatRender(); return; }
+      const key = chatKey(), hist = (state.chat.history[key] = state.chat.history[key] || []);
+      const entry = { q: question, a: '' };
+      hist.push(entry);
+      state.chat.busy = true;
+      chatRender();
+      try {
+        const result = await gs('askMeetings', { question, history: hist.slice(0, -1).slice(-6), context: chatContext() });
+        entry.a = result.answer;
+      } catch (error) { entry.a = error.message; entry.err = true; }
+      state.chat.busy = false;
+      chatRender();
+    }
+
+    // ---------- Event wiring for the new features ----------
+    document.addEventListener('click', async (event) => {
+      const t = event.target;
+      if (t.matches?.('input[type="date"]')) { try { t.showPicker(); } catch (e) {} }
+      if (!t.closest('#peoplePicker')) { const m = $('#peopleMenu'); if (m) m.hidden = true; }
+      const button = t.closest('button');
+      if (!button) return;
+      if (button.matches('[data-filter]')) {
+        if (state.filter !== button.dataset.filter) return;
+        if (state.filter === 'actions') renderActionsView();
+        else { app.classList.remove('mobile-editor'); if (state.filter === 'trash') await showTrash(); }
+      } else if (button.id === 'peopleButton') { if (!dirtyGuard()) return; renderPeopleView(); }
+      else if (button.matches('[data-open-meeting]')) { if (!dirtyGuard()) return; const note = noteById(button.dataset.openMeeting); if (note) openMeeting(note, true); }
+      else if (button.matches('[data-action-group]')) { state.actionGroup = button.dataset.actionGroup; renderActionsView(); }
+      else if (button.matches('[data-action-showdone]')) { state.actionShowDone = !state.actionShowDone; renderActionsView(); }
+      else if (button.matches('[data-restore]')) {
+        const id = button.dataset.restore;
+        try { await gs('restoreMeeting', id); const n = state.trash.find((x) => x.id === id); state.trash = state.trash.filter((x) => x.id !== id); if (n) { delete n.deletedAt; state.notes = [n, ...state.notes]; } toast('Meeting restored.'); }
+        catch (error) { toast('Could not restore: ' + error.message); }
+        renderList();
+      } else if (button.matches('[data-purge]')) {
+        if (!confirm('Delete this meeting forever? This cannot be undone.')) return;
+        const id = button.dataset.purge;
+        try { await gs('purgeMeeting', id); state.trash = state.trash.filter((x) => x.id !== id); toast('Deleted forever.'); }
+        catch (error) { toast('Could not delete: ' + error.message); }
+        renderList();
+      } else if (button.matches('[data-empty-trash]')) {
+        if (!state.trash.length || !confirm('Delete everything in the recycle bin forever?')) return;
+        for (const n of [...state.trash]) { try { await gs('purgeMeeting', n.id); state.trash = state.trash.filter((x) => x.id !== n.id); } catch (error) { toast('Stopped: ' + error.message); break; } }
+        renderList();
+      } else if (button.matches('[data-people-group]')) { state.peopleGroup = button.dataset.peopleGroup; renderPeopleView(); }
+      else if (button.matches('[data-add-contact]')) {
+        if (addContact($('#newName').value, $('#newEmail').value, parseGroups($('#newGroups').value))) { queueContactsSave(); renderPeopleView(); }
+      } else if (button.matches('[data-bulk-add]')) {
+        const groups = parseGroups($('#bulkGroups').value);
+        let count = 0;
+        String($('#bulkText').value || '').split(/[\n;]+/).map((x) => x.trim()).filter(Boolean).forEach((line) => {
+          const m = line.match(/^(.*?)\s*<([^>]+)>$/);
+          if (m) { if (addContact(m[1].replace(/^["']|["']$/g, ''), m[2], groups)) count++; }
+          else if (line.includes('@')) { if (addContact('', line, groups)) count++; }
+          else if (addContact(line, '', groups)) count++;
+        });
+        if (count) { queueContactsSave(); renderPeopleView(); toast('Added ' + count + ' ' + (count === 1 ? 'person' : 'people') + '.'); }
+      } else if (button.matches('[data-remove-contact]')) {
+        const id = button.closest('[data-contact]').dataset.contact;
+        state.contacts = state.contacts.filter((c) => c.id !== id);
+        queueContactsSave(); renderPeopleView();
+      } else if (button.matches('[data-rename-group]')) {
+        const old = state.peopleGroup, name = prompt('New group name', old);
+        if (!name?.trim() || name.trim() === old) return;
+        state.contacts.forEach((c) => { c.groups = [...new Set((c.groups || []).map((g) => (g === old ? name.trim() : g)))]; });
+        state.peopleGroup = name.trim(); queueContactsSave(); renderPeopleView();
+      } else if (button.matches('[data-delete-group]')) {
+        const old = state.peopleGroup;
+        if (!confirm('Delete the group "' + old + '"? The people stay in your master list.')) return;
+        state.contacts.forEach((c) => { c.groups = (c.groups || []).filter((g) => g !== old); });
+        state.peopleGroup = ''; queueContactsSave(); renderPeopleView();
+      } else if (button.matches('[data-remove-chip]')) { button.closest('.chip').remove(); setDirty(); }
+      else if (button.matches('[data-pick]')) { addPerson(button.dataset.pick); const input = $('#peopleInput'); input.value = ''; input.focus(); renderPeopleMenu(); }
+      else if (button.matches('[data-copy-emails]')) await copyEmails();
+      else if (button.id === 'chatFab') chatSetOpen(!state.chat.open);
+      else if (button.matches('[data-chat-clear]')) { state.chat.history[chatKey()] = []; chatRender(); }
+      else if (button.matches('[data-chat-suggest]')) chatAsk(button.dataset.chatSuggest);
+    });
+    document.addEventListener('input', (event) => {
+      const t = event.target;
+      if (t.id === 'peopleInput') { renderPeopleMenu(); return; }
+      const row = t.closest?.('#peopleView [data-contact]');
+      if (row && t.dataset.contactField) {
+        const c = state.contacts.find((x) => x.id === row.dataset.contact);
+        if (!c) return;
+        c[t.dataset.contactField] = t.dataset.contactField === 'groups' ? parseGroups(t.value) : t.value;
+        queueContactsSave();
+      }
+    });
+    document.addEventListener('change', (event) => {
+      const t = event.target;
+      if (t.id === 'peopleGroupSel') {
+        const group = t.value;
+        t.value = '';
+        if (group) state.contacts.filter((c) => (c.groups || []).includes(group)).forEach((c) => addPerson(personLabel(c)));
+      } else if (t.id === 'chatScope') { state.chat.scope = t.value; chatRender(); }
+      else if (t.matches?.('[data-act-toggle]')) toggleAction(t.dataset.note, Number(t.dataset.index), t.checked);
+      else if (t.dataset?.contactField === 'groups') updateGroupChips();
+    });
+    document.addEventListener('focusin', (event) => { if (event.target.id === 'peopleInput') renderPeopleMenu(); });
+    document.addEventListener('keydown', (event) => {
+      if (event.target.id !== 'peopleInput') return;
+      const input = event.target;
+      if (event.key === 'Enter' || event.key === ',') {
+        event.preventDefault();
+        const first = $('#peopleMenu [data-pick]');
+        const value = event.key === ',' ? input.value.replace(/,/g, '') : (first ? first.dataset.pick : input.value);
+        addPerson(value); input.value = ''; renderPeopleMenu();
+      } else if (event.key === 'Escape') { const m = $('#peopleMenu'); if (m) m.hidden = true; }
+      else if (event.key === 'Backspace' && !input.value) { const last = [...document.querySelectorAll('#peopleChips .chip')].pop(); if (last) { last.remove(); setDirty(); } }
+    });
+
     async function boot() {
       try {
         await window.mnSignIn();
@@ -709,8 +1103,10 @@
         state.notes = meetings || [];
         list.setAttribute('aria-busy', 'false');
         $('#accountLabel').textContent = 'Private Drive storage';
+        chatEnsureDom();
         renderList();
         if (state.notes.length) openMeeting(state.notes[0]);
+        gs('getContacts').then((c) => { state.contacts = c || []; if (state.current && !state.dirty && !state.view) editorShell.innerHTML = editorHtml(state.current); }).catch((error) => toast('People list could not load: ' + error.message));
         gs('meetingAiStatus').then((ai) => { state.ai = ai; }).catch((error) => {
           toast('AI settings could not load: ' + error.message);
         });
