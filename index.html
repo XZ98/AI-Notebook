@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f5f2">
+  <title>Meeting Notebook</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f6f5f2; --surface: #fff; --ink: #20231f; --muted: #767a73; --line: #e8e7e2;
+      --accent: #d9775f; --accent-soft: #fbede8; --green: #4a7561; --shadow: 0 12px 35px #39392b0d;
+      font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--paper); color: var(--ink); }
+    button, input, textarea, select { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .app { display: grid; grid-template-columns: 252px 320px minmax(0, 1fr); min-height: 100vh; }
+    .rail { display: flex; flex-direction: column; min-height: 100vh; padding: 22px 14px; background: #f0efeb; border-right: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 10px; padding: 0 10px 24px; font-size: 15px; font-weight: 750; letter-spacing: -.03em; }
+    .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; color: #fff; background: var(--accent); font-size: 16px; }
+    .new-btn, .primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 9px 13px; border: 0; border-radius: 10px; color: #fff; background: var(--accent); font-weight: 650; }
+    .new-btn { margin: 0 4px 20px; box-shadow: 0 4px 12px #d9775f22; }
+    .new-btn:hover, .primary:hover { background: #c9654d; }
+    .nav-group { display: grid; gap: 4px; }
+    .nav-label { padding: 15px 10px 6px; color: var(--muted); font-size: 10px; font-weight: 750; letter-spacing: .11em; text-transform: uppercase; }
+    .nav-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 10px; border: 0; border-radius: 9px; color: #50544e; background: transparent; text-align: left; }
+    .nav-item:hover, .nav-item.active { color: var(--ink); background: #e7e5df; }
+    .nav-item.active { font-weight: 700; }
+    .nav-item .count { margin-left: auto; color: var(--muted); font-size: 12px; }
+    .nav-icon { display: inline-grid; place-items: center; width: 18px; color: #878b83; font-size: 16px; }
+    .notebooks { display: grid; gap: 3px; }
+    .notebook-row { display: flex; align-items: center; gap: 5px; }
+    .notebook-row .nav-item { min-width: 0; }
+    .notebook-row .nav-item span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .icon-btn { display: inline-grid; place-items: center; width: 34px; height: 34px; border: 1px solid transparent; border-radius: 9px; color: var(--muted); background: transparent; }
+    .icon-btn:hover { border-color: var(--line); color: var(--ink); background: var(--surface); }
+    .rail-bottom { margin-top: auto; padding: 16px 5px 0; border-top: 1px solid #e3e1dc; }
+    .account { padding: 5px 9px 0; color: var(--muted); font-size: 12px; }
+    .library { min-width: 0; height: 100vh; overflow: auto; background: #faf9f7; border-right: 1px solid var(--line); }
+    .library-head { position: sticky; top: 0; z-index: 3; padding: 19px 16px 12px; background: #faf9f7ee; backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+    .library-title-row { display: flex; align-items: center; gap: 10px; }
+    .library-title-row h1 { margin: 0; font-size: 17px; letter-spacing: -.035em; }
+    .library-title-row .icon-btn { margin-left: auto; }
+    .search { position: relative; margin-top: 15px; }
+    .search input { width: 100%; height: 39px; padding: 0 36px 0 35px; border: 1px solid #e7e5e0; border-radius: 10px; outline: 0; background: var(--surface); }
+    .search input:focus { border-color: #d3a398; box-shadow: 0 0 0 3px #d9775f15; }
+    .search-mark { position: absolute; top: 8px; left: 11px; color: #999c95; font-size: 17px; }
+    .shortcut { position: absolute; top: 9px; right: 10px; color: #a4a69f; font-size: 10px; }
+    .meeting-list { display: grid; gap: 3px; padding: 9px; }
+    .meeting-card { display: block; width: 100%; padding: 12px; border: 1px solid transparent; border-radius: 11px; background: transparent; text-align: left; }
+    .meeting-card:hover { background: #f1f0ec; }
+    .meeting-card.selected { border-color: #eee2de; background: #fff; box-shadow: 0 2px 8px #39392b08; }
+    .meeting-card-title { display: flex; justify-content: space-between; gap: 8px; font-weight: 680; }
+    .meeting-card-title span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .meeting-card-date { flex: none; color: #999b95; font-size: 11px; font-weight: 450; }
+    .meeting-card-summary { display: -webkit-box; margin-top: 5px; overflow: hidden; color: var(--muted); font-size: 12px; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .meeting-card-meta { display: flex; gap: 6px; margin-top: 9px; color: #92958d; font-size: 10px; }
+    .tag { padding: 2px 7px; border-radius: 999px; background: #f0efeb; }
+    .empty-list { padding: 34px 18px; color: var(--muted); text-align: center; }
+    .editor-shell { min-width: 0; height: 100vh; overflow: auto; }
+    .editor-top { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; min-height: 62px; padding: 11px clamp(18px, 4vw, 52px); background: #f6f5f2ee; backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+    .save-state { margin-right: auto; color: var(--muted); font-size: 12px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: #50544e; font-weight: 580; }
+    .btn:hover { border-color: #d8d6d0; color: var(--ink); }
+    .btn:disabled { opacity: .55; cursor: wait; }
+    .btn.danger { color: #b94f45; }
+    .btn.recording { color: #b94f45; border-color: #e6aaa0; background: #fff5f2; }
+    .editor { width: min(850px, 100%); margin: 0 auto; padding: 36px clamp(20px, 5vw, 68px) 90px; }
+    .crumb { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; }
+    .crumb input { width: 180px; padding: 3px 7px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--muted); font-size: 12px; }
+    .crumb input:focus { border-color: var(--line); outline: 0; background: #fff; }
+    .title-input { display: block; width: 100%; margin: 16px 0 18px; padding: 0; border: 0; outline: 0; background: transparent; font-size: clamp(29px, 4vw, 40px); font-weight: 720; letter-spacing: -.055em; line-height: 1.16; }
+    .title-input::placeholder { color: #b5b6b0; }
+    .meta-row { display: grid; grid-template-columns: 110px minmax(0,1fr); align-items: center; gap: 12px; margin: 8px 0; color: var(--muted); font-size: 12px; }
+    .meta-row label { display: flex; align-items: center; gap: 7px; }
+    .meta-row input { width: 100%; min-width: 0; padding: 6px 9px; border: 1px solid transparent; border-radius: 7px; outline: 0; background: transparent; }
+    .meta-row input:hover, .meta-row input:focus { border-color: var(--line); background: #fff; }
+    .divider { height: 1px; margin: 25px 0; background: var(--line); }
+    .section { margin: 24px 0; }
+    .section-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+    .section-head h2 { margin: 0; font-size: 13px; font-weight: 750; letter-spacing: .005em; }
+    .section-icon { color: var(--accent); }
+    .section textarea { display: block; width: 100%; min-height: 96px; padding: 12px 13px; resize: vertical; border: 1px solid var(--line); border-radius: 10px; outline: 0; background: #fff; line-height: 1.65; }
+    .section textarea:focus, .action-row input:focus { border-color: #d3a398; box-shadow: 0 0 0 3px #d9775f12; }
+    .section textarea::placeholder { color: #b2b4ad; }
+    .summary-area { min-height: 100px !important; font-size: 15px; }
+    .quiet { color: var(--muted); font-size: 12px; }
+    .transcript-area { min-height: 180px !important; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+    .action-list { display: grid; gap: 8px; }
+    .action-row { display: grid; grid-template-columns: 24px minmax(140px,1fr) minmax(90px,130px) minmax(90px,120px) 32px; align-items: center; gap: 7px; }
+    .action-row input:not([type=checkbox]) { min-width: 0; width: 100%; padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px; outline: 0; background: #fff; font-size: 12px; }
+    .action-row input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--green); }
+    .action-row.done input:not([type=checkbox]) { color: #999; text-decoration: line-through; }
+    .action-add { margin-top: 9px; padding: 5px 0; border: 0; color: var(--green); background: transparent; font-size: 12px; font-weight: 650; }
+    .transcript-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 0; }
+    .privacy-callout { padding: 10px 12px; border: 1px solid #f1e1dc; border-radius: 9px; background: #fff8f5; color: #81584e; font-size: 11px; line-height: 1.5; }
+    .toast { position: fixed; right: 22px; bottom: 20px; z-index: 10; max-width: min(420px, calc(100vw - 32px)); padding: 11px 15px; transform: translateY(12px); opacity: 0; pointer-events: none; border-radius: 10px; color: #fff; background: #242722; box-shadow: var(--shadow); transition: .18s ease; }
+    .toast.show { transform: none; opacity: 1; }
+    .modal-back { position: fixed; inset: 0; z-index: 8; display: grid; place-items: center; padding: 18px; background: #1b1c1880; }
+    .modal { width: min(480px, 100%); max-height: 90vh; overflow: auto; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 24px 80px #0003; }
+    .modal h2 { margin: 0 0 6px; font-size: 20px; letter-spacing: -.03em; }
+    .modal p { color: var(--muted); font-size: 13px; }
+    .modal label { display: grid; gap: 5px; margin: 12px 0; color: #5b5e58; font-size: 12px; font-weight: 650; }
+    .modal input, .modal select { width: 100%; padding: 10px 11px; border: 1px solid var(--line); border-radius: 8px; outline: 0; background: var(--surface); }
+    .modal-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 18px; }
+    .modal-actions .right { display: flex; gap: 8px; margin-left: auto; }
+    .loading { padding: 40px; color: var(--muted); text-align: center; }
+    .empty-editor { display: grid; min-height: calc(100vh - 62px); place-content: center; padding: 30px; color: var(--muted); text-align: center; }
+    .empty-editor b { color: var(--ink); font-size: 22px; letter-spacing: -.04em; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+    @media (max-width: 960px) { .app { grid-template-columns: 205px minmax(250px, 300px) minmax(0,1fr); } .rail { padding-inline: 9px; } .editor { padding-inline: 28px; } }
+    @media (max-width: 740px) {
+      .app { display: block; }
+      .rail { position: fixed; z-index: 6; right: 0; bottom: 0; left: 0; display: flex; flex-direction: row; align-items: center; justify-content: space-around; min-height: auto; height: calc(58px + env(safe-area-inset-bottom)); padding: 4px 6px env(safe-area-inset-bottom); border-top: 1px solid var(--line); border-right: 0; background: #f8f7f4ed; backdrop-filter: blur(12px); }
+      .brand, .new-btn, .nav-label, .notebooks, .rail-bottom { display: none; }
+      .nav-group { display: contents; }
+      .nav-item { display: grid; justify-items: center; gap: 0; width: auto; min-width: 62px; padding: 5px 8px; font-size: 10px; }
+      .nav-item .count { display: none; }
+      .nav-icon { font-size: 17px; }
+      .library { position: fixed; inset: 0 0 calc(58px + env(safe-area-inset-bottom)); z-index: 1; height: auto; border-right: 0; }
+      .editor-shell { display: none; height: calc(100dvh - 58px - env(safe-area-inset-bottom)); }
+      .app.mobile-editor .library { display: none; }
+      .app.mobile-editor .editor-shell { display: block; }
+      .editor-top { min-height: 54px; padding-inline: 13px; }
+      .editor { padding: 25px 18px 70px; }
+      .title-input { font-size: 31px; }
+      .action-row { grid-template-columns: 20px minmax(110px,1fr) minmax(80px,100px) 32px; }
+      .action-row .due-input { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="rail" aria-label="Notebook navigation">
+      <div class="brand"><span class="brand-mark">&#x2733;</span> Meeting Notebook</div>
+      <button class="new-btn" id="newMeeting"><span>&#xff0b;</span> New meeting</button>
+      <div class="nav-group">
+        <button class="nav-item active" data-filter="all"><span class="nav-icon">&#x25a4;</span><span>All meetings</span><span class="count" id="allCount"></span></button>
+        <button class="nav-item" data-filter="inbox"><span class="nav-icon">&#x2311;</span><span>Inbox</span><span class="count" id="inboxCount"></span></button>
+        <button class="nav-item" data-filter="actions"><span class="nav-icon">&#x2611;</span><span>Action items</span></button>
+      </div>
+      <div class="nav-label">Notebooks <button class="icon-btn" id="addNotebook" title="Create a notebook" aria-label="Create a notebook">&#xff0b;</button></div>
+      <div class="notebooks" id="notebooks"></div>
+      <div class="rail-bottom">
+        <button class="nav-item" id="settingsButton"><span class="nav-icon">&#x2699;</span><span>AI &amp; settings</span></button>
+        <div class="account" id="accountLabel">Starting...</div>
+      </div>
+    </aside>
+    <section class="library" aria-label="Meeting directory">
+      <header class="library-head">
+        <div class="library-title-row"><h1 id="listTitle">All meetings</h1><button class="icon-btn" id="listNew" title="New meeting" aria-label="New meeting">&#xff0b;</button></div>
+        <label class="search"><span class="search-mark" aria-hidden="true">&#x2315;</span><input id="search" type="search" placeholder="Search notes, decisions, people&#x2026;" autocomplete="off" aria-label="Fuzzy search all meeting notes"><span class="shortcut">&#x2318; K</span></label>
+      </header>
+      <div class="meeting-list" id="meetingList" aria-live="polite" aria-busy="true"><div class="loading">Loading your notebooks&#x2026;</div></div>
+    </section>
+    <main class="editor-shell" id="editorShell"><div class="empty-editor"><div><b>Your meetings, thoughtfully organized.</b><p>Choose a meeting or start a new one.</p><button class="primary" id="emptyNew">&#xff0b; New meeting</button></div></div></main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <input id="audioFile" class="visually-hidden" type="file" accept="audio/*,.wav,.mp3,.m4a,.webm,.ogg,.flac">
+  <script>
+    window.addEventListener('error', (event) => {
+      const list = document.getElementById('meetingList');
+      if (!list) return;
+      list.setAttribute('aria-busy', 'false');
+      const escape = (value) => String(value || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const location = event.lineno ? `Line ${event.lineno}, column ${event.colno || 0}` : 'Source location unavailable';
+      list.innerHTML = `<div class="empty-list">The notebook script failed to start.<br><br>${escape(event.message || 'Unknown JavaScript error')}<br>${escape(location)}<br><br>Check that backend.js is deployed next to index.html.</div>`;
+    });
+    window.setTimeout(() => {
+      if (window.__meetingNotebookStarted) return;
+      const list = document.getElementById('meetingList');
+      if (!list || list.getAttribute('aria-busy') !== 'true') return;
+      list.setAttribute('aria-busy', 'false');
+      list.innerHTML = '<div class="empty-list">The notebook app script did not start. Check that backend.js is next to index.html.</div>';
+    }, 8000);
+  </script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="backend.js"></script>
+  <script>
+    window.__meetingNotebookStarted = true;
+    const DEFAULT_BASE = 'https:' + String.fromCharCode(47, 47) + 'api.groq.com/openai/v1';
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const blankMeeting = (notebook = 'Inbox') => ({
+      id: '', title: '', date: new Date().toISOString().slice(0, 10), notebook,
+      participants: [], tags: [], summary: '', keyPoints: [], decisions: [], actionItems: [],
+      followUps: [], transcript: '', rawNotes: '', createdAt: Date.now(), updatedAt: Date.now(),
+    });
+    const state = { notes: [], current: null, filter: 'all', query: '', dirty: false, saving: false, ai: null, recorder: null, chunks: [], stream: null, recTimer: 0, recStarted: 0 };
+    const app = $('#app'), list = $('#meetingList'), editorShell = $('#editorShell'), toastBox = $('#toast');
+    let toastTimer = 0;
+    $('#accountLabel').textContent = 'Connecting to Google Drive\u2026';
+    function toast(message) { toastBox.textContent = message; toastBox.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastBox.classList.remove('show'), 3200); }
+    function normalized(s) {
+      const source = String(s || '').normalize('NFKD').toLowerCase();
+      const words = [];
+      let word = '';
+      for (let i = 0; i < source.length; i++) {
+        const code = source.charCodeAt(i);
+        const combiningMark = code >= 0x300 && code <= 0x36f;
+        const asciiWord = (code >= 48 && code <= 57) || (code >= 97 && code <= 122);
+        const punctuation = code === 0x2014 || code === 0x2013 || code === 0x2026 ||
+          code === 0xff0c || code === 0x3002 || (code >= 0xff01 && code <= 0xff0f) ||
+          (code >= 0xff1a && code <= 0xff20) || (code >= 0xff3b && code <= 0xff40) ||
+          (code >= 0xff5b && code <= 0xff65) || (code >= 0x3008 && code <= 0x3011) ||
+          code === 0x00b7;
+        if (combiningMark) continue;
+        if (code <= 0x20 || (code < 128 && !asciiWord) || punctuation) {
+          if (word) { words.push(word); word = ''; }
+        } else {
+          word += source[i];
+        }
+      }
+      if (word) words.push(word);
+      return words.join(' ');
+    }
+    function editDistance(a, b) {
+      if (Math.abs(a.length - b.length) > 2) return 3;
+      var prev = [], next, i, j, cost, rowMin, tmp;
+      for (j = 0; j <= b.length; j++) prev.push(j);
+      for (i = 1; i <= a.length; i++) {
+        next = [i];
+        rowMin = i;
+        for (j = 1; j <= b.length; j++) {
+          cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+          next[j] = Math.min(next[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+          if (next[j] < rowMin) rowMin = next[j];
+        }
+        if (rowMin > 2) return 3;
+        tmp = prev; prev = next; next = tmp;
+      }
+      return prev[b.length];
+    }
+    function fuzzyFieldScore(query, field) {
+      const q = normalized(query), text = normalized(field);
+      if (!q || !text) return 0;
+      if (text.includes(q)) return 1.25 + Math.min(.25, q.length / Math.max(1, text.length));
+      const terms = q.split(' '), words = text.split(' ').filter(Boolean);
+      let total = 0;
+      for (const term of terms) {
+        let best = 0;
+        for (const word of words) {
+          if (word.startsWith(term)) best = Math.max(best, .92);
+          else if (term.startsWith(word) && word.length >= 3) best = Math.max(best, .78);
+          else if (term.length >= 4 && word.length >= 4) {
+            const d = editDistance(term.slice(0, 32), word.slice(0, 32));
+            if (d <= 2) best = Math.max(best, .78 - d * .12);
+            let i = 0;
+            for (const c of word) if (c === term[i]) i++;
+            if (i === term.length) best = Math.max(best, .7 * term.length / word.length);
+          }
+        }
+        if (!best) return 0;
+        total += best;
+      }
+      return total / terms.length;
+    }
+    function matchScore(note, query) {
+      const fields = [
+        [note.title, 7], [note.notebook, 5], [(note.participants || []).join(' '), 4],
+        [(note.tags || []).join(' '), 3], [note.summary, 4], [(note.decisions || []).join(' '), 4],
+        [(note.keyPoints || []).join(' '), 3], [(note.actionItems || []).map((a) => [a.task, a.owner].join(' ')).join(' '), 3],
+        [(note.followUps || []).join(' '), 2], [note.transcript, 1], [note.rawNotes, 1],
+      ];
+      return fields.reduce((score, [value, weight]) => Math.max(score, fuzzyFieldScore(query, value) * weight), 0);
+    }
+    const noteById = (id) => state.notes.find((note) => note.id === id);
+    function visibleNotes() {
+      let notes = state.notes;
+      if (state.filter === 'inbox') notes = notes.filter((note) => !note.notebook || note.notebook === 'Inbox');
+      else if (state.filter === 'actions') notes = notes.filter((note) => (note.actionItems || []).some((item) => !item.done));
+      else if (state.filter.startsWith('notebook:')) notes = notes.filter((note) => note.notebook === state.filter.slice(9));
+      const q = state.query.trim();
+      if (q) notes = notes.map((note) => ({ note, score: matchScore(note, q) })).filter((x) => x.score >= 1.35).sort((a, b) => b.score - a.score || String(b.note.date).localeCompare(String(a.note.date))).map((x) => x.note);
+      return notes.slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || (b.updatedAt || 0) - (a.updatedAt || 0));
+    }
+    function dateLabel(date) {
+      const d = new Date(String(date || '') + 'T12:00:00');
+      return Number.isNaN(+d) ? '' : new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(d);
+    }
+    function renderList() {
+      const notes = visibleNotes();
+      app.querySelectorAll('[data-filter]').forEach((button) => button.classList.toggle('active', button.dataset.filter === state.filter));
+      $('#allCount').textContent = state.notes.length || '';
+      $('#inboxCount').textContent = state.notes.filter((n) => !n.notebook || n.notebook === 'Inbox').length || '';
+      const notebooks = [...new Set(state.notes.map((n) => n.notebook).filter((n) => n && n !== 'Inbox'))].sort((a, b) => a.localeCompare(b));
+      $('#notebooks').innerHTML = notebooks.map((notebook) => `<div class="notebook-row"><button class="nav-item${state.filter === 'notebook:' + notebook ? ' active' : ''}" data-notebook="${esc(notebook)}"><span class="nav-icon">\u25a7</span><span>${esc(notebook)}</span></button></div>`).join('');
+      $('#listTitle').textContent = state.filter === 'inbox' ? 'Inbox' : state.filter === 'actions' ? 'Action items' : state.filter.startsWith('notebook:') ? state.filter.slice(9) : state.query ? 'Search results' : 'All meetings';
+      if (!notes.length) {
+        list.innerHTML = `<div class="empty-list">${state.query ? 'No close matches. Try fewer words or another spelling.' : state.filter === 'actions' ? 'No open action items.' : 'No meetings here yet.'}<br><br><button class="btn" data-new>\uff0b New meeting</button></div>`;
+        return;
+      }
+      list.innerHTML = notes.map((note) => `<button class="meeting-card${state.current?.id === note.id ? ' selected' : ''}" data-meeting="${esc(note.id)}">
+        <span class="meeting-card-title"><span>${esc(note.title || 'Untitled meeting')}</span><span class="meeting-card-date">${esc(dateLabel(note.date))}</span></span>
+        <span class="meeting-card-summary">${esc(note.summary || note.transcript || note.rawNotes || 'Add notes, or generate minutes from a transcript.')}</span>
+        <span class="meeting-card-meta"><span>${esc(note.notebook || 'Inbox')}</span>${note.participants?.length ? `<span>\u00b7</span><span>${esc(note.participants.slice(0, 2).join(', '))}</span>` : ''}${note.actionItems?.length ? `<span>\u00b7</span><span>${note.actionItems.filter((a) => !a.done).length} open actions</span>` : ''}</span>
+      </button>`).join('');
+    }
+    function lineText(items) { return (items || []).join('\n'); }
+    function actionRows(items = []) {
+      return items.length ? items.map((item, index) => `<div class="action-row${item.done ? ' done' : ''}" data-action-index="${index}">
+        <input type="checkbox" data-action-field="done" aria-label="Mark action complete"${item.done ? ' checked' : ''}>
+        <input data-action-field="task" value="${esc(item.task)}" placeholder="Action item">
+        <input data-action-field="owner" value="${esc(item.owner)}" placeholder="Owner">
+        <input class="due-input" data-action-field="due" value="${esc(item.due)}" placeholder="Due date">
+        <button class="icon-btn" data-remove-action title="Remove action" aria-label="Remove action">\u00d7</button></div>`).join('') : '<p class="quiet">Capture who will do what, by when.</p>';
+    }
+    function editorHtml(note) {
+      const isDraft = !note.id;
+      return `<div class="editor-top"><span class="save-state" id="saveState">${state.dirty ? 'Unsaved changes' : note.id ? 'Saved to your Drive' : 'New meeting'}</span>
+        <button class="btn" data-audio="upload">\u21e7 Upload audio</button><button class="btn" data-audio="record" id="recordButton">\u25cf Record</button>
+        <button class="btn danger" data-delete${isDraft ? ' disabled' : ''}>Delete</button><button class="primary" data-save>Save meeting</button></div>
+        <article class="editor" id="meetingEditor">
+          <div class="crumb"><span>Notebook</span><span>&rsaquo;</span><input data-field="notebook" value="${esc(note.notebook || 'Inbox')}" aria-label="Notebook name"></div>
+          <input class="title-input" data-field="title" value="${esc(note.title)}" placeholder="Meeting title" aria-label="Meeting title">
+          <div class="meta-row"><label>\u25f7 &nbsp; Date</label><input type="date" data-field="date" value="${esc(note.date)}"></div>
+          <div class="meta-row"><label>\u2659 &nbsp; People</label><input data-list-field="participants" value="${esc((note.participants || []).join(', '))}" placeholder="Add attendees, separated by commas"></div>
+          <div class="meta-row"><label>\u2311 &nbsp; Tags</label><input data-list-field="tags" value="${esc((note.tags || []).join(', '))}" placeholder="Add tags, separated by commas"></div>
+          <div class="divider"></div>
+          <section class="section"><div class="section-head"><span class="section-icon">\u2733</span><h2>Summary</h2></div><textarea class="summary-area" data-field="summary" placeholder="A short overview of the conversation\u2026">${esc(note.summary)}</textarea></section>
+          <section class="section"><div class="section-head"><span class="section-icon">\u21b3</span><h2>Key points</h2></div><textarea data-lines="keyPoints" placeholder="One key point per line\u2026">${esc(lineText(note.keyPoints))}</textarea></section>
+          <section class="section"><div class="section-head"><span class="section-icon">\u25c7</span><h2>Decisions</h2></div><textarea data-lines="decisions" placeholder="One decision per line\u2026">${esc(lineText(note.decisions))}</textarea></section>
+          <section class="section"><div class="section-head"><span class="section-icon">\u2611</span><h2>Action items</h2></div><div class="action-list" id="actionList">${actionRows(note.actionItems)}</div><button class="action-add" data-add-action>\uff0b Add an action item</button></section>
+          <section class="section"><div class="section-head"><span class="section-icon">\u2197</span><h2>Follow-ups</h2></div><textarea data-lines="followUps" placeholder="Open questions and things to revisit\u2026">${esc(lineText(note.followUps))}</textarea></section>
+          <div class="divider"></div>
+          <section class="section"><div class="section-head"><span class="section-icon">\u25a4</span><h2>Transcript &amp; raw notes</h2></div>
+            <div class="privacy-callout">Audio is sent to your selected AI provider only after you confirm. Audio files are processed for transcription and then discarded; transcripts and minutes are saved in your Google Drive. Browser dictation and provider privacy practices vary.</div>
+            <label class="quiet" for="transcript" style="display:block;margin:13px 0 6px">Transcript</label><textarea class="transcript-area" id="transcript" data-field="transcript" placeholder="Paste a transcript, type notes, or record / upload meeting audio\u2026">${esc(note.transcript)}</textarea>
+            <label class="quiet" for="rawNotes" style="display:block;margin:13px 0 6px">Raw notes</label><textarea id="rawNotes" data-field="rawNotes" placeholder="Your own notes and context\u2026">${esc(note.rawNotes)}</textarea>
+            <div class="transcript-tools"><button class="btn" data-generate>\u2733 Generate structured minutes</button><span class="quiet">Uses the provider and model set in AI &amp; settings.</span></div>
+          </section>
+        </article>`;
+    }
+    function readEditor() {
+      if (!state.current) return null;
+      const note = { ...state.current };
+      $('#meetingEditor')?.querySelectorAll('[data-field]').forEach((input) => { note[input.dataset.field] = input.value; });
+      $('#meetingEditor')?.querySelectorAll('[data-list-field]').forEach((input) => {
+        note[input.dataset.listField] = input.value.split(',').map((x) => x.trim()).filter(Boolean);
+      });
+      $('#meetingEditor')?.querySelectorAll('[data-lines]').forEach((input) => {
+        note[input.dataset.lines] = input.value.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+      });
+      note.actionItems = [...($('#actionList')?.querySelectorAll('.action-row') || [])].map((row) => {
+        const get = (field) => row.querySelector(`[data-action-field="${field}"]`);
+        return { task: get('task').value.trim(), owner: get('owner').value.trim(), due: get('due').value.trim(), done: get('done').checked, priority: '' };
+      }).filter((item) => item.task);
+      return note;
+    }
+    function setDirty() {
+      if (!state.current) return;
+      state.current = readEditor();
+      state.dirty = true;
+      const label = $('#saveState');
+      if (label) label.textContent = 'Unsaved changes';
+      renderList();
+    }
+    function openMeeting(note, mobile = false) {
+      state.current = { ...note, participants: [...(note.participants || [])], tags: [...(note.tags || [])], keyPoints: [...(note.keyPoints || [])], decisions: [...(note.decisions || [])], followUps: [...(note.followUps || [])], actionItems: (note.actionItems || []).map((x) => ({ ...x })) };
+      state.dirty = false;
+      editorShell.innerHTML = editorHtml(state.current);
+      if (mobile) app.classList.add('mobile-editor');
+      renderList();
+    }
+    async function saveCurrent() {
+      if (!state.current || state.saving) return;
+      const note = readEditor();
+      if (!note.title.trim()) { $('[data-field="title"]')?.focus(); toast('Add a meeting title before saving.'); return; }
+      state.saving = true;
+      const save = $('[data-save]');
+      if (save) { save.disabled = true; save.textContent = 'Saving\u2026'; }
+      try {
+        const saved = await gs('saveMeeting', note);
+        state.notes = [saved, ...state.notes.filter((item) => item.id !== saved.id)];
+        state.current = { ...saved };
+        state.dirty = false;
+        editorShell.innerHTML = editorHtml(state.current);
+        toast('Meeting saved to your Google Drive.');
+        renderList();
+      } catch (error) {
+        toast('Could not save: ' + error.message);
+        if (save) { save.disabled = false; save.textContent = 'Save meeting'; }
+      } finally { state.saving = false; }
+    }
+    function newMeeting(notebook = state.filter.startsWith('notebook:') ? state.filter.slice(9) : 'Inbox') {
+      if (state.dirty && !confirm('Discard unsaved changes and start a new meeting?')) return;
+      state.filter = 'all';
+      state.query = '';
+      $('#search').value = '';
+      openMeeting(blankMeeting(notebook), true);
+      $('[data-field="title"]')?.focus();
+    }
+    function dirtyGuard() {
+      if (state.dirty && !confirm('Discard unsaved changes?')) return false;
+      if (state.dirty) {
+        const saved = state.current?.id ? noteById(state.current.id) : null;
+        state.dirty = false;
+        if (saved) openMeeting(saved);
+        else { state.current = null; editorShell.innerHTML = '<div class="empty-editor"><div><b>Draft discarded.</b><p>Choose a meeting or start a new one.</p></div></div>'; }
+      }
+      return true;
+    }
+    function renderSettings() {
+      const current = state.ai || { provider: 'gemini', model: 'gemini-2.5-flash', baseUrl: DEFAULT_BASE, keys: {} };
+      const providers = [
+        ['gemini', 'Google Gemini'], ['openai', 'OpenAI-compatible (OpenAI, Groq, OpenRouter, etc.)'], ['anthropic', 'Anthropic Claude'],
+      ];
+      const saved = current.keys?.[current.provider] || '';
+      editorShell.innerHTML = `<div class="editor-top"><span class="save-state">AI &amp; settings</span><button class="btn" data-settings-close>Back to meetings</button></div>
+        <article class="editor"><h1 style="font-size:30px;letter-spacing:-.05em">AI &amp; settings</h1>
+          <p class="quiet">Use your own API subscriptions. Keys are stored only in this browser (localStorage) and sent only to the provider you pick.</p>
+          <div class="privacy-callout">When you generate minutes or transcribe audio, the content is sent to the provider you select. Review that provider\u2019s terms and do not send confidential meeting content unless permitted.</div>
+          <section class="section"><div class="section-head"><span class="section-icon">\u2733</span><h2>Meeting minutes provider</h2></div>
+            <label class="quiet" for="aiProvider">Provider</label><select id="aiProvider" style="width:100%;margin:5px 0 13px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff">${providers.map(([id, label]) => `<option value="${id}"${current.provider === id ? ' selected' : ''}>${label}${current.keys?.[id] ? ' \u00b7 saved ' + esc(current.keys[id]) : ''}</option>`).join('')}</select>
+            <label class="quiet" for="aiModel">Model name</label><input id="aiModel" value="${esc(current.model || '')}" style="width:100%;margin:5px 0 13px;padding:10px;border:1px solid var(--line);border-radius:8px" placeholder="Provider model identifier">
+            <div id="baseUrlRow"${current.provider === 'openai' ? '' : ' hidden'}><label class="quiet" for="aiBaseUrl">OpenAI-compatible API base URL</label><input id="aiBaseUrl" value="${esc(current.baseUrl || DEFAULT_BASE)}" style="width:100%;margin:5px 0 13px;padding:10px;border:1px solid var(--line);border-radius:8px" placeholder="${DEFAULT_BASE}"></div>
+            <div id="transcriptionModelRow"${current.provider === 'openai' ? '' : ' hidden'}><label class="quiet" for="aiTranscriptionModel">Audio transcription model</label><input id="aiTranscriptionModel" value="${esc(current.transcriptionModel || 'whisper-large-v3-turbo')}" style="width:100%;margin:5px 0 13px;padding:10px;border:1px solid var(--line);border-radius:8px" placeholder="For example: whisper-1"></div>
+            <label class="quiet" for="aiKey">API key ${saved ? `<span>\u00b7 saved ${esc(saved)}</span>` : ''}</label><input id="aiKey" type="password" autocomplete="new-password" style="width:100%;margin:5px 0 13px;padding:10px;border:1px solid var(--line);border-radius:8px" placeholder="${saved ? 'Leave blank to keep saved key' : 'Paste provider API key'}">
+            <div class="transcript-tools"><button class="primary" data-ai-save>Save provider &amp; key</button><button class="btn" data-ai-test>Test minutes generation</button><button class="btn danger" data-ai-delete${saved ? '' : ' disabled'}>Remove this provider key</button></div>
+            <p class="quiet" id="aiStatus"></p>
+          </section>
+          <section class="section"><div class="section-head"><span class="section-icon">\u2315</span><h2>Directory search</h2></div><p class="quiet">Search is local to this page and fuzzy-matches meeting names, people, notebooks, tags, summaries, decisions, action items, follow-ups, transcripts and raw notes. Search data is loaded from your Drive into this browser session; it is not sent to an AI model.</p><p class="quiet">Shortcuts: <b>Ctrl/\u2318 K</b> to search, <b>Ctrl/\u2318 S</b> to save.</p></section>
+        </article>`;
+      $('#aiProvider').addEventListener('change', updateAiProvider);
+      updateAiProvider();
+    }
+    function updateAiProvider() {
+      const provider = $('#aiProvider').value;
+      const defaults = { gemini: 'gemini-2.5-flash', openai: 'llama-3.3-70b-versatile', anthropic: 'claude-haiku-5-5' };
+      $('#aiModel').value = state.ai?.provider === provider && state.ai?.model ? state.ai.model : defaults[provider];
+      $('#baseUrlRow').hidden = provider !== 'openai';
+      $('#transcriptionModelRow').hidden = provider !== 'openai';
+      $('#aiTranscriptionModel').value = state.ai?.provider === provider && state.ai?.transcriptionModel ? state.ai.transcriptionModel : 'whisper-large-v3-turbo';
+      const saved = state.ai?.keys?.[provider] || '';
+      $('#aiKey').placeholder = saved ? 'Leave blank to keep saved key' : 'Paste provider API key';
+      $('[data-ai-delete]').disabled = !saved;
+      const label = $('#aiProvider').selectedOptions[0].textContent;
+      $('#aiStatus').textContent = saved ? 'A key is saved for ' + label + '.' : 'No key saved for ' + label + '.';
+    }
+    async function saveAiSettings() {
+      const status = $('#aiStatus'); status.textContent = 'Saving\u2026';
+      try {
+        state.ai = await gs('saveMeetingAiConfig', { provider: $('#aiProvider').value, model: $('#aiModel').value.trim(), transcriptionModel: $('#aiTranscriptionModel')?.value.trim(), baseUrl: $('#aiBaseUrl')?.value.trim(), key: $('#aiKey').value.trim() });
+        $('#aiKey').value = '';
+        renderSettings();
+        $('#aiStatus').textContent = 'Settings saved. Your key stays in this browser.';
+        toast('AI provider settings saved.');
+        return true;
+      } catch (error) { status.textContent = error.message; return false; }
+    }
+    async function deleteAiKey() {
+      try { state.ai = await gs('deleteMeetingAiKey', $('#aiProvider').value); renderSettings(); updateAiProvider(); toast('Provider key removed.'); }
+      catch (error) { toast('Could not remove the key: ' + error.message); }
+    }
+    async function testAi() {
+      const status = $('#aiStatus'); status.textContent = 'Testing provider\u2026';
+      try {
+        if (($('#aiKey').value.trim() || !state.ai?.keys?.[$('#aiProvider').value]) && !await saveAiSettings()) return;
+        await gs('testMeetingAi');
+        $('#aiStatus').textContent = 'Provider test succeeded. Generated test content was not saved to your notebook.';
+        toast('AI provider is ready.');
+      } catch (error) { $('#aiStatus').textContent = error.message; }
+    }
+    async function generateMinutes() {
+      const note = readEditor();
+      if (!note.transcript.trim() && !note.rawNotes.trim()) { toast('Add a transcript or raw notes first.'); return; }
+      if (!state.ai?.keys?.[state.ai.provider]) { toast('Add an AI provider key in AI & settings first.'); renderSettings(); return; }
+      const button = $('[data-generate]'); button.disabled = true; button.textContent = '\u2733 Drafting minutes\u2026';
+      try {
+        const minutes = await gs('generateMeetingMinutes', { title: note.title, transcript: note.transcript, notes: note.rawNotes });
+        state.current = { ...note, ...minutes };
+        state.dirty = true;
+        editorShell.innerHTML = editorHtml(state.current);
+        toast('Draft minutes are ready. Review them, then save.');
+      } catch (error) { toast('Could not generate minutes: ' + error.message); button.disabled = false; button.textContent = '\u2733 Generate structured minutes'; }
+    }
+    async function transcribeBlob(blob, consentGiven = false) {
+      if (blob.size > 7 * 1024 * 1024) { toast('Audio is larger than 7 MB. Record a shorter segment or compress it.'); return; }
+      if (!state.ai?.keys?.[state.ai.provider]) { toast('Save an AI provider key before transcribing audio.'); return; }
+      if (!consentGiven) {
+        const consent = confirm('Your audio will be sent to ' + ({ gemini: 'Google Gemini', openai: 'your selected OpenAI-compatible provider', anthropic: 'Anthropic Claude' }[state.ai.provider]) + ' for transcription. The audio is not saved in your notebook. Continue?');
+        if (!consent) return;
+      }
+      toast('Transcribing audio\u2026');
+      try {
+        const base64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = () => reject(new Error('Could not read the audio file.'));
+          reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+          reader.readAsDataURL(blob);
+        });
+        const result = await gs('transcribeMeetingAudio', { audioBase64: base64, mimeType: String(blob.type || 'audio/webm').split(';')[0] });
+        const transcript = $('#meetingEditor [data-field="transcript"]');
+        transcript.value = [transcript.value.trim(), result.transcript].filter(Boolean).join('\n\n');
+        setDirty();
+        toast('Transcript added. Drafting structured minutes\u2026');
+        await generateMinutes();
+      } catch (error) { toast('Transcription failed: ' + error.message); }
+    }
+    async function toggleRecording(button) {
+      if (state.recorder) { state.recorder.stop(); button.disabled = true; button.textContent = 'Finishing\u2026'; return; }
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') { toast('Audio recording is not supported in this browser. Upload an audio file instead.'); return; }
+      if (!state.ai?.keys?.[state.ai.provider]) { toast('Save an AI provider key before recording.'); renderSettings(); return; }
+      if (state.ai.provider === 'anthropic') { toast('Audio transcription needs Gemini or an OpenAI-compatible provider.'); return; }
+      if (!confirm('Recording audio requires microphone permission. When you stop, the recording will be sent to ' + (state.ai.provider === 'gemini' ? 'Google Gemini' : 'your selected OpenAI-compatible provider') + ' for transcription and minutes. The audio is not saved in your notebook. Continue?')) return;
+      try {
+        state.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        state.chunks = [];
+        state.recorder = new MediaRecorder(state.stream);
+        state.recorder.ondataavailable = (event) => { if (event.data.size) state.chunks.push(event.data); };
+        state.recorder.onstop = async () => {
+          const blob = new Blob(state.chunks, { type: state.recorder?.mimeType || 'audio/webm' });
+          state.stream?.getTracks().forEach((track) => track.stop());
+          state.stream = null; state.recorder = null; state.chunks = [];
+          clearInterval(state.recTimer);
+          const record = $('[data-audio="record"]');
+          if (record) { record.disabled = false; record.classList.remove('recording'); record.textContent = '\u25cf Record'; }
+          await transcribeBlob(blob, true);
+        };
+        state.recorder.start(1000);
+        state.recStarted = Date.now();
+        button.classList.add('recording');
+        const paintTimer = () => {
+          const seconds = Math.floor((Date.now() - state.recStarted) / 1000);
+          button.textContent = `\u25a0 ${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')} \u00b7 Stop`;
+          if (state.chunks.reduce((sum, chunk) => sum + chunk.size, 0) > 6.8 * 1024 * 1024) { toast('Recording is nearing the 7 MB limit. Stop to transcribe.'); state.recorder?.stop(); }
+        };
+        paintTimer(); state.recTimer = setInterval(paintTimer, 1000);
+      } catch (error) { state.stream?.getTracks().forEach((track) => track.stop()); state.stream = null; toast('Microphone could not start: ' + error.message); }
+    }
+    function handleActionInput(event) {
+      const row = event.target.closest('.action-row');
+      if (row && event.target.dataset.actionField === 'done') row.classList.toggle('done', event.target.checked);
+      if (event.target.closest('#meetingEditor')) setDirty();
+    }
+    document.addEventListener('input', (event) => {
+      if (event.target === $('#search')) { state.query = event.target.value; renderList(); return; }
+      if (event.target.closest('#meetingEditor')) setDirty();
+    });
+    document.addEventListener('change', (event) => { if (event.target.closest('#meetingEditor')) handleActionInput(event); });
+    document.addEventListener('click', async (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      if (button.matches('[data-filter]')) { if (!dirtyGuard()) return; state.filter = button.dataset.filter; app.querySelectorAll('[data-filter]').forEach((b) => b.classList.toggle('active', b === button)); renderList(); }
+      else if (button.matches('[data-notebook]')) { if (!dirtyGuard()) return; state.filter = 'notebook:' + button.dataset.notebook; renderList(); }
+      else if (button.matches('[data-meeting]')) { if (!dirtyGuard()) return; const note = noteById(button.dataset.meeting); if (note) openMeeting(note, true); }
+      else if (button.id === 'newMeeting' || button.id === 'listNew' || button.id === 'emptyNew' || button.matches('[data-new]')) newMeeting();
+      else if (button.id === 'addNotebook') { const name = prompt('Notebook name'); if (name?.trim()) newMeeting(name.trim().slice(0, 100)); }
+      else if (button.id === 'settingsButton') { if (!dirtyGuard()) return; renderSettings(); }
+      else if (button.matches('[data-settings-close]')) { if (state.current) openMeeting(state.current, true); else editorShell.innerHTML = '<div class="empty-editor"><div><b>Your meetings, thoughtfully organized.</b><p>Choose a meeting or start a new one.</p></div></div>'; }
+      else if (button.matches('[data-save]')) await saveCurrent();
+      else if (button.matches('[data-delete]')) {
+        if (!state.current?.id || !confirm('Delete this meeting and its notes from your Google Drive?')) return;
+        try { await gs('deleteMeeting', state.current.id); state.notes = state.notes.filter((n) => n.id !== state.current.id); state.current = null; state.dirty = false; editorShell.innerHTML = '<div class="empty-editor"><div><b>Meeting deleted.</b><p>Choose another meeting or start a new one.</p></div></div>'; renderList(); toast('Meeting deleted.'); }
+        catch (error) { toast('Could not delete: ' + error.message); }
+      } else if (button.matches('[data-add-action]')) {
+        const note = readEditor(); note.actionItems.push({ task: '', owner: '', due: '', done: false, priority: '' }); state.current = note;
+        $('#actionList').innerHTML = actionRows(note.actionItems); setDirty(); $('#actionList .action-row:last-child [data-action-field="task"]')?.focus();
+      } else if (button.matches('[data-remove-action]')) {
+        const note = readEditor(); note.actionItems.splice(+button.closest('.action-row').dataset.actionIndex, 1); state.current = note; $('#actionList').innerHTML = actionRows(note.actionItems); setDirty();
+      } else if (button.matches('[data-generate]')) await generateMinutes();
+      else if (button.dataset.audio === 'upload') $('#audioFile').click();
+      else if (button.dataset.audio === 'record') await toggleRecording(button);
+      else if (button.matches('[data-ai-save]')) await saveAiSettings();
+      else if (button.matches('[data-ai-delete]')) await deleteAiKey();
+      else if (button.matches('[data-ai-test]')) await testAi();
+    });
+    $('#audioFile').addEventListener('change', async (event) => {
+      const file = event.target.files?.[0]; event.target.value = '';
+      if (file) await transcribeBlob(file);
+    });
+    document.addEventListener('keydown', (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); $('#search').focus(); }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); saveCurrent(); }
+      if (event.key === 'Escape' && app.classList.contains('mobile-editor')) app.classList.remove('mobile-editor');
+    });
+    async function boot() {
+      try {
+        await window.mnSignIn();
+        list.innerHTML = '<div class="loading">Loading your notebooks...</div>';
+        const meetings = await gs('getMeetings');
+        state.notes = meetings || [];
+        list.setAttribute('aria-busy', 'false');
+        $('#accountLabel').textContent = 'Private Drive storage';
+        renderList();
+        if (state.notes.length) openMeeting(state.notes[0]);
+        gs('meetingAiStatus').then((ai) => { state.ai = ai; }).catch((error) => {
+          toast('AI settings could not load: ' + error.message);
+        });
+      } catch (error) {
+        list.setAttribute('aria-busy', 'false');
+        list.innerHTML = `<div class="empty-list">Could not load your notebook.<br><br>${esc(error.message)}<br><br><button class="btn" id="retry">Try again</button></div>`;
+        list.addEventListener('click', () => location.reload(), { once: true });
+      }
+    }
+    boot();
+  </script>
+</body>
+</html>
