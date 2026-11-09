@@ -183,7 +183,7 @@
     const DEFAULT_BASE = 'https:' + String.fromCharCode(47, 47) + 'api.groq.com/openai/v1';
     const $ = (selector, root = document) => root.querySelector(selector);
     const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const langSel = (code) => { try { return (localStorage.getItem('mnLang') || navigator.language) === code ? ' selected' : ''; } catch (e) { return ''; } };
+    const langSel = (code) => { try { return (localStorage.getItem('mnLang') || 'auto') === code ? ' selected' : ''; } catch (e) { return code === 'auto' ? ' selected' : ''; } };
     const blankMeeting = (notebook = 'Inbox') => ({
       id: '', title: '', date: new Date().toISOString().slice(0, 10), notebook,
       participants: [], tags: [], summary: '', keyPoints: [], decisions: [], actionItems: [],
@@ -330,7 +330,7 @@
             <div class="privacy-callout">Audio is sent to your selected AI provider only after you confirm. Audio files are processed for transcription and then discarded; transcripts and minutes are saved in your Google Drive. Browser dictation and provider privacy practices vary.</div>
             <label class="quiet" for="transcript" style="display:block;margin:13px 0 6px">Transcript</label><textarea class="transcript-area" id="transcript" data-field="transcript" placeholder="Paste a transcript, type notes, or record / upload meeting audio\u2026">${esc(note.transcript)}</textarea>
             <label class="quiet" for="rawNotes" style="display:block;margin:13px 0 6px">Raw notes</label><textarea id="rawNotes" data-field="rawNotes" placeholder="Your own notes and context\u2026">${esc(note.rawNotes)}</textarea>
-            <div class="transcript-tools"><label class="quiet" for="liveLang">Live language</label><select id="liveLang" style="padding:6px;border:1px solid var(--line);border-radius:8px;background:#fff" onchange="try{localStorage.setItem('mnLang',this.value)}catch(e){}"><option value="en-US"${langSel('en-US')}>English (US)</option><option value="en-GB"${langSel('en-GB')}>English (UK)</option><option value="zh-CN"${langSel('zh-CN')}>Chinese (Mandarin)</option><option value="zh-HK"${langSel('zh-HK')}>Cantonese (HK)</option><option value="ms-MY"${langSel('ms-MY')}>Malay</option><option value="id-ID"${langSel('id-ID')}>Indonesian</option><option value="th-TH"${langSel('th-TH')}>Thai</option><option value="vi-VN"${langSel('vi-VN')}>Vietnamese</option><option value="ja-JP"${langSel('ja-JP')}>Japanese</option></select><button class="btn" data-generate>\u2733 Generate structured minutes</button><span class="quiet">Uses the provider and model set in AI &amp; settings.</span></div>
+            <div class="transcript-tools"><label class="quiet" for="liveLang">Language</label><select id="liveLang" style="padding:6px;border:1px solid var(--line);border-radius:8px;background:#fff" onchange="try{localStorage.setItem('mnLang',this.value)}catch(e){}"><option value="auto"${langSel('auto')}>Auto-detect (transcribed when you stop)</option><option value="en-US"${langSel('en-US')}>Live: English (US)</option><option value="en-GB"${langSel('en-GB')}>Live: English (UK)</option><option value="zh-CN"${langSel('zh-CN')}>Live: Chinese (Mandarin)</option><option value="zh-HK"${langSel('zh-HK')}>Live: Cantonese (HK)</option><option value="ms-MY"${langSel('ms-MY')}>Live: Malay</option><option value="id-ID"${langSel('id-ID')}>Live: Indonesian</option><option value="th-TH"${langSel('th-TH')}>Live: Thai</option><option value="vi-VN"${langSel('vi-VN')}>Live: Vietnamese</option><option value="ja-JP"${langSel('ja-JP')}>Live: Japanese</option></select><button class="btn" data-generate>\u2733 Generate structured minutes</button><span class="quiet">Uses the provider and model set in AI &amp; settings.</span></div>
           </section>
         </article>`;
     }
@@ -500,12 +500,125 @@
         await generateMinutes();
       } catch (error) { toast('Transcription failed: ' + error.message); }
     }
-    async function toggleRecording(button) {
+    function paintRecordButton(on, label) {
+      const b = $('[data-audio="record"]');
+      if (b) { b.classList.toggle('recording', on); b.textContent = on ? (label || '■ Stop') : '● Record'; }
+    }
+    function setLiveStatus(textValue) {
+      let status = $('#liveStatus');
+      if (!status) {
+        const field = $('#meetingEditor [data-field="transcript"]');
+        if (!field) return;
+        status = document.createElement('div');
+        status.id = 'liveStatus';
+        status.className = 'quiet';
+        field.insertAdjacentElement('afterend', status);
+      }
+      status.textContent = textValue;
+    }
+    function encodeWav(chunks, total, rate) {
+      const buf = new ArrayBuffer(44 + total * 2), v = new DataView(buf);
+      const str = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+      str(0, 'RIFF'); v.setUint32(4, 36 + total * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+      v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+      str(36, 'data'); v.setUint32(40, total * 2, true);
+      let o = 44;
+      for (const c of chunks) for (let i = 0; i < c.length; i++) { const x = Math.max(-1, Math.min(1, c[i])); v.setInt16(o, x < 0 ? x * 32768 : x * 32767, true); o += 2; }
+      return new Blob([buf], { type: 'audio/wav' });
+    }
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Could not read the audio.'));
+        reader.onload = () => resolve(String(reader.result).split(',')[1] || '');
+        reader.readAsDataURL(blob);
+      });
+    }
+    async function transcribeSegment(blob) {
+      const audioBase64 = await blobToBase64(blob);
+      const result = await gs('transcribeMeetingAudio', { audioBase64, mimeType: 'audio/wav', allowEmpty: true });
+      const field = $('#meetingEditor [data-field="transcript"]');
+      if (field && result.transcript) {
+        field.value = [field.value.trim(), result.transcript].filter(Boolean).join('\n\n');
+        field.scrollTop = field.scrollHeight;
+        setDirty();
+      }
+      return result;
+    }
+    async function autoMinutes() {
+      if (!state.ai?.keys?.[state.ai.provider]) { setLiveStatus('Stopped. Add an AI key in AI & settings to generate minutes automatically.'); return; }
+      const note = readEditor();
+      if (!note || (!note.transcript.trim() && !note.rawNotes.trim())) { setLiveStatus('Stopped. No speech was captured.'); return; }
+      setLiveStatus('Drafting structured minutes...');
+      await generateMinutes();
+      setLiveStatus('Done. Review the draft minutes, then save.');
+    }
+    async function startAutoRecording() {
+      if (!navigator.mediaDevices?.getUserMedia || !(window.AudioContext || window.webkitAudioContext)) { toast('Audio recording is not supported in this browser.'); return; }
+      if (!state.ai?.keys?.[state.ai.provider]) { toast('Save an AI key in AI & settings first, or pick a specific live language.'); return; }
+      if (state.ai.provider === 'anthropic') { toast('Auto-detect needs Gemini or an OpenAI-compatible provider (Anthropic cannot transcribe audio).'); return; }
+      if (localStorage.getItem('mnAudioOk') !== '1') {
+        if (!confirm('While recording, short audio segments are sent to your selected AI provider for transcription. Audio is not stored in your notebook. Continue?')) return;
+        localStorage.setItem('mnAudioOk', '1');
+      }
+      let stream;
+      try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+      catch (error) { toast('Microphone could not start: ' + error.message); return; }
+      const ctx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+      const rate = ctx.sampleRate;
+      const src = ctx.createMediaStreamSource(stream), proc = ctx.createScriptProcessor(4096, 1, 1), mute = ctx.createGain();
+      mute.gain.value = 0;
+      let chunks = [], total = 0, queue = Promise.resolve(), done = 0, sent = 0, timer = 0, finished = false;
+      const started = Date.now(), langs = new Set();
+      const paint = () => {
+        const s = Math.floor((Date.now() - started) / 1000);
+        const clock = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+        paintRecordButton(true, '■ ' + clock + ' · Stop');
+        setLiveStatus('Recording. Language is auto-detected; text appears every ~3 minutes and when you stop. Segments transcribed: ' + done + '/' + sent + (langs.size ? ' · Detected: ' + [...langs].join(', ') : ''));
+      };
+      const flush = () => {
+        if (total < rate) { chunks = []; total = 0; return; }
+        const blob = encodeWav(chunks, total, rate);
+        chunks = []; total = 0; sent++;
+        queue = queue.then(() => transcribeSegment(blob))
+          .then((r) => { if (r?.language) langs.add(r.language); })
+          .catch((error) => toast('Transcription failed: ' + error.message))
+          .then(() => { done++; if (!finished) paint(); });
+      };
+      proc.onaudioprocess = (event) => {
+        const data = new Float32Array(event.inputBuffer.getChannelData(0));
+        chunks.push(data); total += data.length;
+        if (total >= rate * 180) flush();
+      };
+      src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+      const finish = async () => {
+        if (finished) return;
+        finished = true;
+        clearInterval(timer);
+        proc.disconnect(); src.disconnect();
+        stream.getTracks().forEach((track) => track.stop());
+        ctx.close();
+        flush();
+        state.live = null;
+        paintRecordButton(false);
+        setLiveStatus('Transcribing the audio...');
+        await queue;
+        if (langs.size) toast('Detected language: ' + [...langs].join(', '));
+        await autoMinutes();
+      };
+      state.live = { auto: true, stopping: false, rec: { stop: finish } };
+      paint();
+      timer = setInterval(paint, 1000);
+    }
+    async function toggleRecording() {
+      if (state.live) { state.live.stopping = true; state.live.rec.stop(); return; }
+      const chosen = $('#liveLang')?.value || 'auto';
+      if (chosen === 'auto') { await startAutoRecording(); return; }
       const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SR) { toast('Live transcription needs Chrome or Edge.'); return; }
-      if (state.live) { state.live.stopping = true; state.live.rec.stop(); return; }
       if (localStorage.getItem('mnLiveOk') !== '1') {
-        if (!confirm('Live transcription uses your browser speech service (in Chrome, audio is sent to Google for recognition). It does not use your AI key and nothing is stored except the text you save. Continue?')) return;
+        if (!confirm('Live transcription uses your browser speech service (in Chrome, audio is sent to Google for recognition). It does not use your AI key. Continue?')) return;
         localStorage.setItem('mnLiveOk', '1');
       }
       const field = $('#meetingEditor [data-field="transcript"]');
@@ -513,21 +626,10 @@
       const rec = new SR();
       rec.continuous = true;
       rec.interimResults = true;
-      rec.lang = $('#liveLang')?.value || navigator.language || 'en-US';
+      rec.lang = chosen;
       const live = { rec, stopping: false };
       state.live = live;
-      let status = $('#liveStatus');
-      if (!status) {
-        status = document.createElement('div');
-        status.id = 'liveStatus';
-        status.className = 'quiet';
-        field.insertAdjacentElement('afterend', status);
-      }
-      const paintButton = (on) => {
-        const b = $('[data-audio="record"]');
-        if (b) { b.classList.toggle('recording', on); b.textContent = on ? '■ Stop' : '● Record'; }
-      };
-      rec.onstart = () => { paintButton(true); status.textContent = 'Listening... start speaking.'; };
+      rec.onstart = () => { paintRecordButton(true); setLiveStatus('Listening... start speaking.'); };
       rec.onresult = (event) => {
         let interim = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -537,8 +639,7 @@
             if (f) { f.value = (f.value.trim() ? f.value.trimEnd() + ' ' : '') + piece.trim(); f.scrollTop = f.scrollHeight; setDirty(); }
           } else interim += piece;
         }
-        const s = $('#liveStatus');
-        if (s) s.textContent = interim ? 'Hearing: ' + interim : 'Listening...';
+        setLiveStatus(interim ? 'Hearing: ' + interim : 'Listening...');
       };
       rec.onerror = (event) => {
         if (event.error === 'no-speech' || event.error === 'aborted') return;
@@ -546,12 +647,11 @@
         else if (event.error === 'network') { live.stopping = true; toast('Speech service unreachable. Check your connection.'); }
         else toast('Transcription error: ' + event.error);
       };
-      rec.onend = () => {
+      rec.onend = async () => {
         if (!live.stopping && state.live === live) { try { rec.start(); return; } catch (e) {} }
         state.live = null;
-        paintButton(false);
-        const s = $('#liveStatus');
-        if (s) s.textContent = 'Stopped. Review the transcript, then click Generate structured minutes.';
+        paintRecordButton(false);
+        await autoMinutes();
       };
       try { rec.start(); } catch (error) { state.live = null; toast('Could not start: ' + error.message); }
     }
